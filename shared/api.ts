@@ -10,3 +10,53 @@
 export interface DemoResponse {
   message: string;
 }
+
+// MindPalace shared types
+export type Role = "student" | "counsellor" | "volunteer" | "admin";
+
+export interface Institution {
+  id: string; // slug-like stable id
+  name: string;
+  region: string; // e.g. J&K, UT
+  code: string; // institution access code
+  domains?: string[]; // optional email domains for verification
+}
+
+export interface BaseAccount {
+  id: string; // UUID-like string
+  institutionCode: string;
+  displayName: string;
+}
+
+export interface StudentAccount extends BaseAccount {
+  role: "student";
+  studentId: string; // provided by institution
+  anonymousId: string; // system-assigned, traceable internally
+}
+
+export interface CounsellorAccount extends BaseAccount {
+  role: "counsellor";
+  counsellorId: string;
+  verifiedBy: string; // hospital/institution code used for verification
+}
+
+export interface VolunteerAccount extends BaseAccount {
+  role: "volunteer";
+  volunteerId: string;
+  nominatedBy: string; // counsellorId
+}
+
+export interface AdminAccount extends BaseAccount {
+  role: "admin";
+}
+
+export type Account =
+  | StudentAccount
+  | CounsellorAccount
+  | VolunteerAccount
+  | AdminAccount;
+
+export interface MockSeedPayload {
+  institutions: Institution[];
+  accounts: Account[];
+}
