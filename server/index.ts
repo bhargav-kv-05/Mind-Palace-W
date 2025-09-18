@@ -20,5 +20,10 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
+  // Mock dataset endpoints (prototype)
+  app.get("/api/mock/institutions", listInstitutions);
+  app.get("/api/mock/accounts", listAccounts);
+  app.get("/api/mock/seed", getSeed);
+
   return app;
 }
