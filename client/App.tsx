@@ -23,21 +23,23 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <RootLayout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Placeholder />} />
-            <Route path="/chat" element={<Placeholder />} />
-            <Route path="/library" element={<Placeholder />} />
-            <Route path="/dashboard" element={<Placeholder />} />
-            <Route path="/dashboard/student" element={<DashboardStudent />} />
-            <Route path="/dashboard/counsellor" element={<DashboardCounsellor />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </RootLayout>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <RootLayout>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/chat" element={<Placeholder />} />
+              <Route path="/library" element={<Placeholder />} />
+              <Route path="/dashboard" element={<Placeholder />} />
+              <Route path="/dashboard/student" element={<ProtectedRoute role="student"><DashboardStudent /></ProtectedRoute>} />
+              <Route path="/dashboard/counsellor" element={<ProtectedRoute role="counsellor"><DashboardCounsellor /></ProtectedRoute>} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </RootLayout>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
