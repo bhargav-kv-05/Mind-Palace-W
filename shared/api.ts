@@ -60,3 +60,23 @@ export interface MockSeedPayload {
   institutions: Institution[];
   accounts: Account[];
 }
+
+export interface ScreeningPayload {
+  institutionCode: string;
+  studentId?: string;
+  studentAnonymousId?: string;
+  phq9: number[]; // 9 items, 0-3
+  gad7: number[]; // 7 items, 0-3
+}
+
+export interface ScreeningScores {
+  phq9Total: number;
+  phq9Severity: "none" | "mild" | "moderate" | "moderately_severe" | "severe";
+  gad7Total: number;
+  gad7Severity: "none" | "mild" | "moderate" | "severe";
+}
+
+export interface ScreeningResult extends ScreeningScores {
+  studentAnonymousId: string;
+  counsellorAssignedId: string | null; // counsellorId receiving results
+}

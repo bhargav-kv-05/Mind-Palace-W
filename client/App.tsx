@@ -10,6 +10,8 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Placeholder from "./pages/Placeholder";
 import RootLayout from "./components/layout/RootLayout";
+import DashboardStudent from "./pages/DashboardStudent";
+import DashboardCounsellor from "./pages/DashboardCounsellor";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,8 @@ const App = () => (
             <Route path="/chat" element={<Placeholder />} />
             <Route path="/library" element={<Placeholder />} />
             <Route path="/dashboard" element={<Placeholder />} />
+            <Route path="/dashboard/student" element={<DashboardStudent />} />
+            <Route path="/dashboard/counsellor" element={<DashboardCounsellor />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

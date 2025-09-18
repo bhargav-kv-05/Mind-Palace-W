@@ -25,5 +25,9 @@ export function createServer() {
   app.get("/api/mock/accounts", listAccounts);
   app.get("/api/mock/seed", getSeed);
 
+  // Screening & identity endpoints (prototype)
+  app.post("/api/assign-anon-id", require("./routes/screening").assignAnonymousId);
+  app.post("/api/screenings", require("./routes/screening").submitScreening);
+
   return app;
 }
