@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
-import { analyzeText, escalation } from "@shared/sensitive";
-import { mockSeed } from "@shared/mock-data";
+import { analyzeText, escalation } from "../../shared/sensitive";
+import { mockSeed } from "../../shared/mock-data";
 
 export const checkModeration: RequestHandler = (req, res) => {
   const { text, institutionCode } = req.body as { text: string; institutionCode?: string };
