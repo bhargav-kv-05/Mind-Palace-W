@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import { mockSeed } from "@shared/mock-data";
+import { mockSeed } from "../../shared/mock-data";
 
 export const listInstitutions: RequestHandler = (_req, res) => {
   res.json(mockSeed.institutions);
