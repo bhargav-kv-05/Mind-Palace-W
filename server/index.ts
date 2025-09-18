@@ -28,9 +28,9 @@ export function createServer() {
   app.get("/api/mock/seed", getSeed);
 
   // Screening & identity endpoints (prototype)
-  app.post("/api/assign-anon-id", require("./routes/screening").assignAnonymousId);
-  app.post("/api/screenings", require("./routes/screening").submitScreening);
-  app.post("/api/moderation/check", require("./routes/moderation").checkModeration);
+  app.post("/api/assign-anon-id", assignAnonymousId);
+  app.post("/api/screenings", submitScreening);
+  app.post("/api/moderation/check", checkModeration);
 
   return app;
 }
