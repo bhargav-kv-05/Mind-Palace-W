@@ -3,6 +3,8 @@ import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { listInstitutions, listAccounts, getSeed } from "./routes/mock";
+import { assignAnonymousId, submitScreening } from "./routes/screening";
+import { checkModeration } from "./routes/moderation";
 
 export function createServer() {
   const app = express();
