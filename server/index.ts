@@ -28,6 +28,7 @@ export function createServer() {
   // Screening & identity endpoints (prototype)
   app.post("/api/assign-anon-id", require("./routes/screening").assignAnonymousId);
   app.post("/api/screenings", require("./routes/screening").submitScreening);
+  app.post("/api/moderation/check", require("./routes/moderation").checkModeration);
 
   return app;
 }

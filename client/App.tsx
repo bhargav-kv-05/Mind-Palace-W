@@ -12,6 +12,9 @@ import Placeholder from "./pages/Placeholder";
 import RootLayout from "./components/layout/RootLayout";
 import DashboardStudent from "./pages/DashboardStudent";
 import DashboardCounsellor from "./pages/DashboardCounsellor";
+import Login from "./pages/Login";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
