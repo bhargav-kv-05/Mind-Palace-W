@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
-import { ScreeningPayload, ScreeningResult } from "@shared/api";
-import { mockSeed } from "@shared/mock-data";
+import { ScreeningPayload, ScreeningResult } from "../../shared/api";
+import { mockSeed } from "../../shared/mock-data";
 import { generateAnonymousId } from "../utils/ids";
 
 const anonMap = new Map<string, string>(); // key: institutionCode:studentId -> anonId
