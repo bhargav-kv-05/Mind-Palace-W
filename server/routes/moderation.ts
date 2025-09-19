@@ -14,9 +14,23 @@ export const checkModeration: RequestHandler = (req, res) => {
     ? mockSeed.accounts.find((a) => a.role === "counsellor" && a.institutionCode === institutionCode)
     : undefined;
 
-  // In production: push Socket.io event to counsellor/volunteer
+  // In production: push Socket.io event to counsellor/volunteer; here persist alert
   if (severity !== "low") {
-    console.log("[ALERT] Moderation trigger", { severity, matches: result.matches, institutionCode, counsellor: counsellor && (counsellor as any).counsellorId });
+    (async () => {
+      try {
+        const { getDb } = await import("../db/mongo");
+        const db = await getDb();
+        await db.collection("alerts").insertOne({
+          institutionCode: institutionCode ?? null,
+          matches: result.matches,
+          severity,
+          notifyCounsellorId: counsellor ? (counsellor as any).counsellorId : null,
+          createdAt: new Date(),
+        });
+      } catch (e) {
+        console.error("Failed to persist alert:", e);
+      }
+    })();
   }
 
   res.json({ severity, matches: result.matches, notifyCounsellorId: counsellor ? (counsellor as any).counsellorId : null });
