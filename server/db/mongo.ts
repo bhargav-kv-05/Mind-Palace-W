@@ -13,7 +13,8 @@ export async function getDb(): Promise<Db> {
   await client.connect();
   // Use default db from URI or fallback
   const url = new URL(uri);
-  const dbName = (url.pathname && url.pathname.replace(/\//g, "")) || "mindpalace";
+  const dbName =
+    (url.pathname && url.pathname.replace(/\//g, "")) || "mindpalace";
   db = client.db(dbName || "mindpalace");
   return db;
 }

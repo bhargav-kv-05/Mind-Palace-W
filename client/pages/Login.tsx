@@ -2,7 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 
-interface Institution { id: string; name: string; code: string; region: string }
+interface Institution {
+  id: string;
+  name: string;
+  code: string;
+  region: string;
+}
 
 export default function Login() {
   const nav = useNavigate();
@@ -16,11 +21,17 @@ export default function Login() {
 
   useEffect(() => {
     import("@/lib/api").then(({ api }) => {
-      fetch(api("/api/mock/institutions")).then(r => r.json()).then(setInstitutions).catch(() => setInstitutions([]));
+      fetch(api("/api/mock/institutions"))
+        .then((r) => r.json())
+        .then(setInstitutions)
+        .catch(() => setInstitutions([]));
     });
   }, []);
 
-  const selected = useMemo(() => institutions.find(i => i.code === institutionCode), [institutions, institutionCode]);
+  const selected = useMemo(
+    () => institutions.find((i) => i.code === institutionCode),
+    [institutions, institutionCode],
+  );
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,14 +39,27 @@ export default function Login() {
     setLoading(true);
     try {
       if (!selected) throw new Error("Invalid institution code");
-      if (!userId) throw new Error(role === "student" ? "Enter Student ID" : "Enter Counsellor ID");
+      if (!userId)
+        throw new Error(
+          role === "student" ? "Enter Student ID" : "Enter Counsellor ID",
+        );
 
       if (role === "student") {
         const { api } = await import("@/lib/api");
-        const res = await fetch(api("/api/assign-anon-id"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ institutionCode, studentId: userId }) });
+        const res = await fetch(api("/api/assign-anon-id"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ institutionCode, studentId: userId }),
+        });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to assign anonymous ID");
-        login({ role: "student", institutionCode, studentId: userId, anonymousId: data.anonymousId });
+        if (!res.ok)
+          throw new Error(data.error || "Failed to assign anonymous ID");
+        login({
+          role: "student",
+          institutionCode,
+          studentId: userId,
+          anonymousId: data.anonymousId,
+        });
         nav("/dashboard/student", { replace: true });
       } else {
         login({ role: "counsellor", institutionCode, counsellorId: userId });
@@ -52,32 +76,66 @@ export default function Login() {
     <section className="relative">
       <div className="container py-16 max-w-xl">
         <h1 className="text-3xl font-extrabold">Secure Access</h1>
-        <p className="mt-2 text-foreground/70">Institution Code → {role === "student" ? "Student ID" : "Counsellor ID"} → Anonymous/Verified session</p>
+        <p className="mt-2 text-foreground/70">
+          Institution Code →{" "}
+          {role === "student" ? "Student ID" : "Counsellor ID"} →
+          Anonymous/Verified session
+        </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div className="inline-flex rounded-full border p-1">
-            <button type="button" onClick={() => setRole("student")} className={`px-4 py-1 text-sm rounded-full ${role === "student" ? "bg-foreground text-background" : ""}`}>Student</button>
-            <button type="button" onClick={() => setRole("counsellor")} className={`px-4 py-1 text-sm rounded-full ${role === "counsellor" ? "bg-foreground text-background" : ""}`}>Counsellor</button>
+            <button
+              type="button"
+              onClick={() => setRole("student")}
+              className={`px-4 py-1 text-sm rounded-full ${role === "student" ? "bg-foreground text-background" : ""}`}
+            >
+              Student
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("counsellor")}
+              className={`px-4 py-1 text-sm rounded-full ${role === "counsellor" ? "bg-foreground text-background" : ""}`}
+            >
+              Counsellor
+            </button>
           </div>
 
           <div>
             <label className="text-sm font-medium">Institution Code</label>
-            <input list="inst-codes" className="mt-1 w-full rounded-lg border px-3 py-2" value={institutionCode} onChange={(e) => setInstitutionCode(e.target.value)} placeholder="e.g., JKU-UK-001" />
+            <input
+              list="inst-codes"
+              className="mt-1 w-full rounded-lg border px-3 py-2"
+              value={institutionCode}
+              onChange={(e) => setInstitutionCode(e.target.value)}
+              placeholder="e.g., JKU-UK-001"
+            />
             <datalist id="inst-codes">
               {institutions.map((i) => (
-                <option key={i.code} value={i.code}>{i.name}</option>
+                <option key={i.code} value={i.code}>
+                  {i.name}
+                </option>
               ))}
             </datalist>
           </div>
 
           <div>
-            <label className="text-sm font-medium">{role === "student" ? "Student ID" : "Counsellor ID"}</label>
-            <input className="mt-1 w-full rounded-lg border px-3 py-2" value={userId} onChange={(e) => setUserId(e.target.value)} placeholder={role === "student" ? "UK-21-4587" : "UK-PSY-01"} />
+            <label className="text-sm font-medium">
+              {role === "student" ? "Student ID" : "Counsellor ID"}
+            </label>
+            <input
+              className="mt-1 w-full rounded-lg border px-3 py-2"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              placeholder={role === "student" ? "UK-21-4587" : "UK-PSY-01"}
+            />
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <button disabled={loading} className="rounded-full px-5 py-2.5 bg-gradient-to-br from-primary to-secondary text-white font-semibold disabled:opacity-60">
+          <button
+            disabled={loading}
+            className="rounded-full px-5 py-2.5 bg-gradient-to-br from-primary to-secondary text-white font-semibold disabled:opacity-60"
+          >
             {loading ? "Authenticating..." : "Enter"}
           </button>
         </form>
