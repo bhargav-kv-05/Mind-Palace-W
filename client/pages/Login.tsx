@@ -15,7 +15,9 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/mock/institutions").then(r => r.json()).then(setInstitutions).catch(() => setInstitutions([]));
+    import("@/lib/api").then(({ api }) => {
+      fetch(api("/api/mock/institutions")).then(r => r.json()).then(setInstitutions).catch(() => setInstitutions([]));
+    });
   }, []);
 
   const selected = useMemo(() => institutions.find(i => i.code === institutionCode), [institutions, institutionCode]);
