@@ -15,6 +15,7 @@ import DashboardCounsellor from "./pages/DashboardCounsellor";
 import Login from "./pages/Login";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import ChatPage from "./pages/Chat";
 
 const queryClient = new QueryClient();
 
@@ -29,7 +30,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/chat" element={<Placeholder />} />
+              <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
               <Route path="/library" element={<Placeholder />} />
               <Route path="/dashboard" element={<Placeholder />} />
               <Route path="/dashboard/student" element={<ProtectedRoute role="student"><DashboardStudent /></ProtectedRoute>} />

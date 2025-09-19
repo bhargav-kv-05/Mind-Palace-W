@@ -31,9 +31,16 @@ function expressPlugin(): Plugin {
     apply: "serve", // Only apply during development (serve mode)
     configureServer(server) {
       const app = createServer();
-
-      // Add Express app as middleware to Vite dev server
       server.middlewares.use(app);
+
+      // Attach Socket.IO to Vite's HTTP server in dev
+      server.httpServer?.once("listening", async () => {
+        const { Server } = await import("socket.io");
+        const { wireSocketIO } = await import("./server/realtime/socket");
+        const origin = true; // dev
+        const io = new Server(server.httpServer!, { cors: { origin } });
+        wireSocketIO(io);
+      });
     },
   };
 }
