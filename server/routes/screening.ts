@@ -34,7 +34,7 @@ export const assignAnonymousId: RequestHandler = (req, res) => {
   res.json({ anonymousId: anon });
 };
 
-export const submitScreening: RequestHandler = (req, res) => {
+export const submitScreening: RequestHandler = async (req, res) => {
   const payload = req.body as ScreeningPayload;
   if (!payload || !payload.institutionCode || !Array.isArray(payload.phq9) || !Array.isArray(payload.gad7)) {
     return res.status(400).json({ error: "Invalid payload" });
@@ -70,6 +70,22 @@ export const submitScreening: RequestHandler = (req, res) => {
     counsellorAssignedId: counsellor?.counsellorId ?? null,
   };
 
-  // Prototype: simply return computed result; in production we'd persist to MongoDB and notify counsellor via Socket.io
+  try {
+    const { getDb } = await import("../db/mongo");
+    const db = await getDb();
+    const doc = {
+      institutionCode: payload.institutionCode,
+      studentAnonymousId: anonId,
+      phq9: payload.phq9,
+      gad7: payload.gad7,
+      ...result,
+      createdAt: new Date(),
+    };
+    await db.collection("screenings").insertOne(doc);
+  } catch (e) {
+    // Non-fatal in prototype
+    console.error("Failed to persist screening:", e);
+  }
+
   return res.json(result);
 };
