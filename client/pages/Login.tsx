@@ -31,7 +31,8 @@ export default function Login() {
       if (!userId) throw new Error(role === "student" ? "Enter Student ID" : "Enter Counsellor ID");
 
       if (role === "student") {
-        const res = await fetch("/api/assign-anon-id", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ institutionCode, studentId: userId }) });
+        const { api } = await import("@/lib/api");
+        const res = await fetch(api("/api/assign-anon-id"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ institutionCode, studentId: userId }) });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to assign anonymous ID");
         login({ role: "student", institutionCode, studentId: userId, anonymousId: data.anonymousId });
