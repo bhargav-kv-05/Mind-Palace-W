@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-import { analyzeText, escalation } from "@shared/sensitive";
+import { analyzeText, escalation } from "../../shared/sensitive";
 
 export function wireSocketIO(io: Server) {
   io.on("connection", (socket: Socket) => {
