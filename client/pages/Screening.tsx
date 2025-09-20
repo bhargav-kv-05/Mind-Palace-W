@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 
 export default function ScreeningPage() {
-  const { session } = useAuth();
+  const { session, login } = useAuth();
   const nav = useNavigate();
   const [phq9, setPhq9] = useState<number[]>(Array(9).fill(0));
   const [gad7, setGad7] = useState<number[]>(Array(7).fill(0));
