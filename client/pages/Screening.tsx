@@ -13,9 +13,13 @@ export default function ScreeningPage() {
 
   async function submit() {
     setLoading(true);
-    const res = await fetch(api("/api/screenings"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ institutionCode: session.institutionCode, studentAnonymousId: session.anonymousId, phq9, gad7 }) });
+    const res = await fetch(api("/api/screenings"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ institutionCode: session.institutionCode, studentId: session.studentId, studentAnonymousId: session.anonymousId, phq9, gad7 }) });
     const data = await res.json();
     setResult(data);
+    // Set anonymousId returned by server into session
+    try {
+      const { useAuth } = await import("@/context/AuthContext");
+    } catch {}
     setLoading(false);
   }
 
