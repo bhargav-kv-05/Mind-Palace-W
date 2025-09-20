@@ -6,15 +6,16 @@ import { api, API_BASE } from "@/lib/api";
 
 export default function ChatPage() {
   const { session } = useAuth();
-  const [tab, setTab] = useState<"live" | "posts">("live");
+  const [tab, setTab] = useState<"live" | "posts" | "library">("live");
   return (
     <section className="container py-8">
       <div className="flex items-center gap-2">
         <button className={`px-4 py-2 rounded-full text-sm ${tab === "live" ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("live")}>Live Chat</button>
         <button className={`px-4 py-2 rounded-full text-sm ${tab === "posts" ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("posts")}>Posts</button>
+        <button className={`px-4 py-2 rounded-full text-sm ${tab === "library" ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("library")}>Motivational Library</button>
       </div>
       <div className="mt-6">
-        {tab === "live" ? <LiveChat /> : <Posts />}
+        {tab === "live" ? <LiveChat /> : tab === "posts" ? <Posts /> : <LibraryTab />}
       </div>
     </section>
   );
@@ -126,8 +127,41 @@ function Posts() {
       <div className="grid gap-2">
         {posts.map((p, i) => (
           <div key={i} className="rounded-lg border p-3 text-sm">
-            <div className="text-foreground/60">{new Date(p.createdAt).toLocaleString()} {p.tone ? `• ${p.tone}` : ""}</div>
+            <div className="text-foreground/60">{new Date(p.createdAt).toLocaleString()} {p.tone ? `• ${p.tone}` : ""} {p.tags?.length ? `• ${p.tags.map((t:string)=>`#${t}`).join(" ")}` : ""}</div>
             <div>{p.text}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LibraryTab() {
+  const [tone, setTone] = useState<string>("");
+  const [tag, setTag] = useState<string>("");
+  const [items, setItems] = useState<any[]>([]);
+
+  async function load() {
+    const qs = new URLSearchParams();
+    if (tone) qs.set("tone", tone);
+    if (tag) qs.set("tag", tag);
+    const res = await fetch(api(`/api/library?${qs.toString()}`));
+    setItems(await res.json());
+  }
+  useEffect(() => { load(); }, []);
+
+  return (
+    <div className="grid gap-4">
+      <div className="flex gap-2">
+        <select value={tone} onChange={(e) => setTone(e.target.value)} className="rounded-lg border px-2"><option value="">All</option><option value="positive">Green</option><option value="negative">Red</option></select>
+        <input placeholder="Filter by tag (e.g., stress)" value={tag} onChange={(e) => setTag(e.target.value)} className="rounded-lg border px-3 py-2" />
+        <button onClick={load} className="rounded-full px-4 py-2 bg-foreground text-background">Search</button>
+      </div>
+      <div className="grid gap-2">
+        {items.map((it, i) => (
+          <div key={i} className="rounded-lg border p-3 text-sm">
+            <div className="text-foreground/60">{new Date(it.createdAt).toLocaleString()} {it.tone ? `• ${it.tone}` : ""} {it.tags?.length ? `• ${it.tags.map((t:string)=>`#${t}`).join(" ")}` : ""}</div>
+            <div>{it.text}</div>
           </div>
         ))}
       </div>
