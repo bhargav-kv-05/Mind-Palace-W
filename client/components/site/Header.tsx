@@ -4,6 +4,8 @@ import { ShieldCheck, MessageSquare, Library, BarChart3 } from "lucide-react";
 
 const nav = [
   { to: "/", label: "Home" },
+  { to: "/chat", label: "Chat" },
+  { to: "/library", label: "Motivational Library" },
 ];
 
 export default function Header() {
