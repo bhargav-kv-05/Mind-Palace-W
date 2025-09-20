@@ -45,13 +45,6 @@ export default function Header() {
           >
             <MessageSquare className="h-4 w-4" /> Launch App
           </Link>
-          <Link
-            to="/dashboard"
-            className="inline-flex md:hidden rounded-full p-2 bg-muted text-foreground hover:bg-muted/80"
-            aria-label="Dashboard"
-          >
-            <BarChart3 className="h-4 w-4" />
-          </Link>
         </div>
       </div>
     </header>
