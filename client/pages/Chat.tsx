@@ -21,6 +21,7 @@ export default function ChatPage() {
 
 function LiveChat() {
   const { session } = useAuth();
+  const nav = (await import("react-router-dom")).useNavigate?.() as any;
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [consent, setConsent] = useState<null | "positive" | "negative" >(null);
