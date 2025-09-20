@@ -17,9 +17,9 @@ export default function ScreeningPage() {
     const data = await res.json();
     setResult(data);
     // Set anonymousId returned by server into session
-    try {
-      const { useAuth } = await import("@/context/AuthContext");
-    } catch {}
+    if (data?.studentAnonymousId) {
+      login({ ...session, anonymousId: data.studentAnonymousId });
+    }
     setLoading(false);
   }
 
