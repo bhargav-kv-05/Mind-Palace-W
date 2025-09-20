@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/context/AuthContext";
 import { api, API_BASE } from "@/lib/api";
@@ -21,7 +22,7 @@ export default function ChatPage() {
 
 function LiveChat() {
   const { session } = useAuth();
-  const nav = (await import("react-router-dom")).useNavigate?.() as any;
+  const nav = useNavigate();
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [consent, setConsent] = useState<null | "positive" | "negative" >(null);
@@ -30,6 +31,10 @@ function LiveChat() {
   const roomId = useMemo(() => `inst:${session.institutionCode ?? "public"}`, [session.institutionCode]);
 
   useEffect(() => {
+    if (session.role === "student" && !session.anonymousId) {
+      nav("/screening", { replace: true });
+      return;
+    }
     const s = io(API_BASE || window.location.origin, { transports: ["websocket", "polling"] });
     socketRef.current = s;
     s.emit("join", { roomId });
