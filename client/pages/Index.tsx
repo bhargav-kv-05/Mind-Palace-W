@@ -61,8 +61,8 @@ export default function Index() {
               <Link to="/login" className="rounded-full px-6 py-3 text-sm font-semibold text-white bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/20">
                 Get Started Securely
               </Link>
-              <Link to="/library" className="rounded-full px-6 py-3 text-sm font-semibold border hover:bg-foreground hover:text-background transition">
-                Explore Library
+              <Link to="/login" className="rounded-full px-6 py-3 text-sm font-semibold border hover:bg-foreground hover:text-background transition">
+                Explore Library (Login required)
               </Link>
             </div>
             <div className="mt-8 rounded-xl border p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
