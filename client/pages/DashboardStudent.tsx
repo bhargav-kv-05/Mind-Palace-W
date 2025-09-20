@@ -9,7 +9,7 @@ export default function DashboardStudent() {
         <div className="rounded-xl border p-4">
           <h2 className="font-bold">PHQ-9 & GAD-7</h2>
           <p className="text-sm text-foreground/70">Complete a quick screening; results go to your institution counsellor.</p>
-          <Link to="/chat" className="mt-3 inline-block rounded-full px-4 py-2 bg-foreground text-background text-sm font-semibold">Start Screening</Link>
+          <Link to="/screening" className="mt-3 inline-block rounded-full px-4 py-2 bg-foreground text-background text-sm font-semibold">Start Screening</Link>
         </div>
         <div className="rounded-xl border p-4">
           <h2 className="font-bold">Ephemeral Chat</h2>

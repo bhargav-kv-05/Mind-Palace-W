@@ -6,5 +6,6 @@ export async function ensureDbIndexes() {
   await db.collection("screenings").createIndex({ institutionCode: 1, studentAnonymousId: 1, createdAt: -1 });
   await db.collection("alerts").createIndex({ institutionCode: 1, createdAt: -1 });
   await db.collection("library").createIndex({ tone: 1, createdAt: -1 });
+  await db.collection("library").createIndex({ tags: 1, createdAt: -1 });
   await db.collection("posts").createIndex({ institutionCode: 1, createdAt: -1 });
 }

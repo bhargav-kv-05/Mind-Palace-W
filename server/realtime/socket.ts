@@ -16,6 +16,7 @@ export function wireSocketIO(io: Server) {
         authorRole: "student" | "counsellor" | "volunteer";
         text: string;
         consent?: "positive" | "negative" | null;
+        tags?: string[];
       }) => {
         try {
           const { getDb } = await import("../db/mongo");

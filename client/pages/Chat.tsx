@@ -24,6 +24,7 @@ function LiveChat() {
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [consent, setConsent] = useState<null | "positive" | "negative" >(null);
+  const [tagsInput, setTagsInput] = useState("");
   const socketRef = useRef<Socket | null>(null);
   const roomId = useMemo(() => `inst:${session.institutionCode ?? "public"}`, [session.institutionCode]);
 
@@ -45,9 +46,11 @@ function LiveChat() {
       authorRole: session.role ?? "student",
       text,
       consent,
+      tags: tagsInput.split(",").map((t: string) => t.trim().toLowerCase()).filter(Boolean),
     });
     setText("");
     setConsent(null);
+    setTagsInput("");
   }
 
   return (
@@ -68,6 +71,7 @@ function LiveChat() {
       </div>
       <div className="flex gap-2">
         <input value={text} onChange={(e) => setText(e.target.value)} className="flex-1 rounded-lg border px-3 py-2" placeholder="Type your message" />
+        <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} className="rounded-lg border px-3 py-2 w-56" placeholder="tags (comma separated)" />
         <select value={consent ?? ""} onChange={(e) => setConsent(e.target.value ? (e.target.value as any) : null)} className="rounded-lg border px-2">
           <option value="">No save</option>
           <option value="positive">Save to Library (Green)</option>
@@ -84,6 +88,7 @@ function Posts() {
   const [posts, setPosts] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [tone, setTone] = useState<"positive" | "negative" | "" | null>("");
+  const [tagsInput, setTagsInput] = useState("");
 
   async function load() {
     const res = await fetch(api(`/api/posts?institutionCode=${encodeURIComponent(session.institutionCode ?? "")}`));
@@ -93,9 +98,10 @@ function Posts() {
 
   async function submit() {
     if (!text.trim()) return;
-    await fetch(api("/api/posts"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ institutionCode: session.institutionCode, authorAnonymousId: session.anonymousId, text, tone: tone || null }) });
+    await fetch(api("/api/posts"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ institutionCode: session.institutionCode, authorAnonymousId: session.anonymousId, text, tone: tone || null, tags: tagsInput.split(",").map(t=>t.trim().toLowerCase()).filter(Boolean) }) });
     setText("");
     setTone("");
+    setTagsInput("");
     load();
   }
 
@@ -103,6 +109,7 @@ function Posts() {
     <div className="grid gap-4">
       <div className="flex gap-2">
         <input value={text} onChange={(e) => setText(e.target.value)} className="flex-1 rounded-lg border px-3 py-2" placeholder="Share a thought (will be saved)" />
+        <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} className="rounded-lg border px-3 py-2 w-56" placeholder="tags (comma separated)" />
         <select value={tone ?? ""} onChange={(e) => setTone(e.target.value as any)} className="rounded-lg border px-2">
           <option value="">No tone</option>
           <option value="positive">Positive (Green)</option>

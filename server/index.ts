@@ -6,6 +6,7 @@ import { listInstitutions, listAccounts, getSeed } from "./routes/mock";
 import { assignAnonymousId, submitScreening } from "./routes/screening";
 import { checkModeration } from "./routes/moderation";
 import { createPost, listPosts } from "./routes/posts";
+import { listLibrary } from "./routes/library";
 
 export function createServer() {
   const app = express();
@@ -48,6 +49,7 @@ export function createServer() {
   app.post("/api/moderation/check", checkModeration);
   app.get("/api/posts", listPosts);
   app.post("/api/posts", createPost);
+  app.get("/api/library", listLibrary);
 
   return app;
 }

@@ -14,18 +14,20 @@ export const listPosts: RequestHandler = async (req, res) => {
 };
 
 export const createPost: RequestHandler = async (req, res) => {
-  const { institutionCode, authorAnonymousId, text, tone } = req.body as {
+  const { institutionCode, authorAnonymousId, text, tone, tags } = req.body as {
     institutionCode: string;
     authorAnonymousId?: string;
     text: string;
     tone?: "positive" | "negative" | null;
+    tags?: string[];
   };
   if (!text) return res.status(400).json({ error: "text is required" });
+  const cleanTags = Array.isArray(tags) ? tags.map((t) => String(t).trim().toLowerCase()).filter(Boolean) : [];
   const db = await getDb();
-  const doc = { institutionCode: institutionCode ?? null, authorAnonymousId: authorAnonymousId ?? null, text, tone: tone ?? null, createdAt: new Date() };
+  const doc = { institutionCode: institutionCode ?? null, authorAnonymousId: authorAnonymousId ?? null, text, tone: tone ?? null, tags: cleanTags, createdAt: new Date() };
   await db.collection("posts").insertOne(doc);
   if (tone === "positive" || tone === "negative") {
-    await db.collection("library").insertOne({ institutionCode: institutionCode ?? null, authorAnonymousId: authorAnonymousId ?? null, text, tone, createdAt: new Date() });
+    await db.collection("library").insertOne({ institutionCode: institutionCode ?? null, authorAnonymousId: authorAnonymousId ?? null, text, tone, tags: cleanTags, createdAt: new Date() });
   }
   res.status(201).json(doc);
 };
