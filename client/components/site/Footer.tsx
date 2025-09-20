@@ -14,7 +14,6 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-semibold mb-2">Platform</h4>
             <ul className="space-y-1 text-sm text-foreground/70">
-              <li><Link to="/library" className="hover:text-foreground">Motivational Library</Link></li>
               <li><Link to="/chat" className="hover:text-foreground">Ephemeral Chat</Link></li>
               <li><Link to="/dashboard" className="hover:text-foreground">Admin Dashboard</Link></li>
             </ul>
