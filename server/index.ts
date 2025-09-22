@@ -51,6 +51,7 @@ export function createServer() {
   app.get("/api/posts", listPosts);
   app.post("/api/posts", createPost);
   app.get("/api/library", listLibrary);
+  app.get("/api/admin/analytics", getAnalytics);
 
   return app;
 }
