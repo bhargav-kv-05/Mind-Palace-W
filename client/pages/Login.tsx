@@ -12,7 +12,7 @@ interface Institution {
 export default function Login() {
   const nav = useNavigate();
   const { session, login } = useAuth();
-  const [role, setRole] = useState<"student" | "counsellor">("student");
+  const [role, setRole] = useState<"student" | "counsellor" | "admin">("student");
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [institutionCode, setInstitutionCode] = useState("");
   const [userId, setUserId] = useState("");
