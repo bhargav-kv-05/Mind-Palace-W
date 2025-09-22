@@ -47,9 +47,12 @@ export default function Login() {
       if (role === "student") {
         login({ role: "student", institutionCode, studentId: userId, anonymousId: null });
         nav("/screening", { replace: true });
-      } else {
+      } else if (role === "counsellor") {
         login({ role: "counsellor", institutionCode, counsellorId: userId });
         nav("/dashboard/counsellor", { replace: true });
+      } else {
+        login({ role: "admin", institutionCode });
+        nav("/dashboard/admin", { replace: true });
       }
     } catch (err: any) {
       setError(err.message || "Login failed");
@@ -83,6 +86,13 @@ export default function Login() {
               className={`px-4 py-1 text-sm rounded-full ${role === "counsellor" ? "bg-foreground text-background" : ""}`}
             >
               Counsellor
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("admin")}
+              className={`px-4 py-1 text-sm rounded-full ${role === "admin" ? "bg-foreground text-background" : ""}`}
+            >
+              Admin
             </button>
           </div>
 
