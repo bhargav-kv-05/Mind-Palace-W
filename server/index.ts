@@ -7,6 +7,7 @@ import { assignAnonymousId, submitScreening } from "./routes/screening";
 import { checkModeration } from "./routes/moderation";
 import { createPost, listPosts } from "./routes/posts";
 import { listLibrary } from "./routes/library";
+import { getAnalytics } from "./routes/admin";
 
 export function createServer() {
   const app = express();
