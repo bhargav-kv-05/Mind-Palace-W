@@ -80,3 +80,26 @@ export interface ScreeningResult extends ScreeningScores {
   studentAnonymousId: string;
   counsellorAssignedId: string | null; // counsellorId receiving results
 }
+
+export interface CountBreakdown {
+  _id: string;
+  count: number;
+}
+
+export interface AdminAnalytics {
+  screenings: {
+    total: number;
+    bySeverity: CountBreakdown[];
+  };
+  alerts: {
+    bySeverity: CountBreakdown[];
+    topTags: CountBreakdown[];
+  };
+  library: {
+    byTone: CountBreakdown[];
+  };
+  posts: {
+    total: number;
+  };
+  note?: string;
+}
