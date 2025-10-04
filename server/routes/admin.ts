@@ -7,7 +7,7 @@ export const getAnalytics: RequestHandler = async (req, res) => {
     const db = await getDb();
     const matchInst = institutionCode ? { institutionCode } : {};
 
-    const [screeningsAgg] = await db.collection("screenings").aggregate([
+    const screeningsAgg = await db.collection("screenings").aggregate([
       { $match: matchInst },
       { $group: { _id: "$phq9Severity", count: { $sum: 1 } } },
     ]).toArray();
@@ -35,7 +35,7 @@ export const getAnalytics: RequestHandler = async (req, res) => {
     const postsTotal = await db.collection("posts").countDocuments(matchInst);
 
     res.json({
-      screenings: { bySeverity: screeningsAgg ?? [], total: screeningsTotal },
+      screenings: { bySeverity: screeningsAgg, total: screeningsTotal },
       alerts: { bySeverity: alertsBySeverity, topTags },
       library: { byTone: libraryStats },
       posts: { total: postsTotal },
