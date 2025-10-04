@@ -11,8 +11,16 @@ import {
 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge, type BadgeProps } from "@/components/ui/badge";
+import type { BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  BreakdownChips,
+  DEFAULT_TOTAL,
+  formatLabel,
+  formatNumber,
+  sortByOrder,
+  sumBreakdown,
+} from "@/components/dashboard/AnalyticsBreakdown";
 import {
   Card,
   CardContent,
@@ -24,8 +32,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useInstitutionAnalytics } from "@/hooks/use-institution-analytics";
 import { useAuth } from "@/context/AuthContext";
 import type { CountBreakdown } from "@shared/api";
-
-const numberFormatter = new Intl.NumberFormat();
 
 const severityLabels: Record<string, string> = {
   none: "None",
@@ -69,7 +75,7 @@ const toneVariantMap: Record<string, BadgeProps["variant"]> = {
   negative: "destructive",
 };
 
-const numberDefault = 0;
+const numberDefault = DEFAULT_TOTAL;
 
 export default function DashboardAdmin() {
   const { session } = useAuth();
@@ -228,39 +234,6 @@ export default function DashboardAdmin() {
   );
 }
 
-type BreakdownChipsProps = {
-  items: CountBreakdown[];
-  emptyMessage: string;
-  getLabel: (item: CountBreakdown) => string;
-  getVariant?: (item: CountBreakdown) => BadgeProps["variant"];
-};
-
-function BreakdownChips({
-  items,
-  emptyMessage,
-  getLabel,
-  getVariant,
-}: BreakdownChipsProps) {
-  if (!items.length) {
-    return <p className="text-sm text-muted-foreground">{emptyMessage}</p>;
-  }
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((item) => (
-        <Badge
-          key={item._id}
-          variant={getVariant?.(item) ?? "secondary"}
-          className="gap-1"
-        >
-          <span>{getLabel(item)}</span>
-          <span className="font-semibold">{formatNumber(item.count)}</span>
-        </Badge>
-      ))}
-    </div>
-  );
-}
-
 type MetricCardProps = {
   title: string;
   description: string;
@@ -287,30 +260,4 @@ function MetricCard({ title, description, value, icon: Icon, footer }: MetricCar
       </CardContent>
     </Card>
   );
-}
-
-function formatNumber(value: number) {
-  return numberFormatter.format(value);
-}
-
-function formatLabel(value: string) {
-  return value
-    .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-function sortByOrder(
-  items: CountBreakdown[],
-  order: Record<string, number>,
-): CountBreakdown[] {
-  return [...items].sort(
-    (a, b) => (order[a._id] ?? 99) - (order[b._id] ?? 99),
-  );
-}
-
-function sumBreakdown(items?: CountBreakdown[]): number {
-  if (!items?.length) {
-    return numberDefault;
-  }
-  return items.reduce((total, item) => total + item.count, 0);
 }
