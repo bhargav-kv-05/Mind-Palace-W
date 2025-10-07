@@ -8,6 +8,7 @@ import { checkModeration } from "./routes/moderation";
 import { createPost, listPosts } from "./routes/posts";
 import { listLibrary } from "./routes/library";
 import { getAnalytics } from "./routes/admin";
+import { getCounsellorOverview } from "./routes/counsellor";
 
 export function createServer() {
   const app = express();
@@ -52,6 +53,7 @@ export function createServer() {
   app.post("/api/posts", createPost);
   app.get("/api/library", listLibrary);
   app.get("/api/admin/analytics", getAnalytics);
+  app.get("/api/counsellor/overview", getCounsellorOverview);
 
   return app;
 }
