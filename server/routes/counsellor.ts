@@ -126,8 +126,9 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
       },
       volunteers: {
         total: volunteerPool.length,
-        active: activeVolunteers.length,
+        active: volunteerPool.length,
         nominated: nominatedCount,
+        members: volunteerMembers,
       },
       community: {
         postsNeedingResponse,
@@ -142,8 +143,9 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
       alerts: { bySeverity: [], recent: [] },
       volunteers: {
         total: volunteerPool.length,
-        active: activeVolunteers.length,
+        active: volunteerPool.length,
         nominated: nominatedCount,
+        members: volunteerMembers,
       },
       community: {
         postsNeedingResponse: 0,
