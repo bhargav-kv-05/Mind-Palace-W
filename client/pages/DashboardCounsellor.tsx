@@ -442,7 +442,7 @@ function VolunteerPanel({ loading, members, nominatedCount, total }: VolunteerPa
           {formatNumber(nominatedCount)} nominated · {formatNumber(total)} in network
         </span>
         <Button variant="outline" size="sm" asChild>
-          <Link to="/chat">Open moderation centre</Link>
+          <Link to="/chat">Open moderation center</Link>
         </Button>
       </CardFooter>
     </Card>
