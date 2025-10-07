@@ -115,6 +115,11 @@ export interface CounsellorOverview {
     total: number;
     active: number;
     nominated: number;
+    members: {
+      id: string;
+      displayName: string;
+      nominatedBy: string | null;
+    }[];
   };
   community: {
     postsNeedingResponse: number;
