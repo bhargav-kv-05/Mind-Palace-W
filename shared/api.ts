@@ -86,6 +86,43 @@ export interface CountBreakdown {
   count: number;
 }
 
+export interface CounsellorScreeningSummary {
+  studentAnonymousId: string;
+  submittedAt: string;
+  phq9Severity: ScreeningResult["phq9Severity"];
+  gad7Severity: ScreeningResult["gad7Severity"];
+  phq9Total: number;
+  gad7Total: number;
+}
+
+export interface CounsellorAlertSummary {
+  id: string;
+  severity: "low" | "moderate" | "severe";
+  primaryTag: string | null;
+  createdAt: string;
+}
+
+export interface CounsellorOverview {
+  screenings: {
+    bySeverity: CountBreakdown[];
+    recent: CounsellorScreeningSummary[];
+  };
+  alerts: {
+    bySeverity: CountBreakdown[];
+    recent: CounsellorAlertSummary[];
+  };
+  volunteers: {
+    total: number;
+    active: number;
+    nominated: number;
+  };
+  community: {
+    postsNeedingResponse: number;
+    resourcesShared: number;
+  };
+  note?: string;
+}
+
 export interface AdminAnalytics {
   screenings: {
     total: number;
