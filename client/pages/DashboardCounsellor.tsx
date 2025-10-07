@@ -264,7 +264,7 @@ type MetricCardProps = {
   description: string;
   value: number;
   icon: LucideIcon;
-  footer?: React.ReactNode;
+  footer?: ReactNode;
 };
 
 function MetricCard({ title, description, value, icon: Icon, footer }: MetricCardProps) {
