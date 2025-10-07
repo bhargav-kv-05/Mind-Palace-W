@@ -266,7 +266,7 @@ type MetricCardProps = {
 };
 
 function MetricCard({ title, description, value, icon: Icon, footer }: MetricCardProps) {
-  return (\
+  return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
         <div>
