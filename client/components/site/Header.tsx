@@ -1,6 +1,11 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useCallback, useMemo } from "react";
+import { LogOut, MessageSquare, ShieldCheck } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
-import { ShieldCheck, MessageSquare, Library, BarChart3 } from "lucide-react";
 
 const nav = [
   { to: "/", label: "Home" },
@@ -10,6 +15,27 @@ const nav = [
 
 export default function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { session, logout } = useAuth();
+
+  const dashboardHref = useMemo(() => {
+    switch (session.role) {
+      case "student":
+        return "/dashboard/student";
+      case "counsellor":
+        return "/dashboard/counsellor";
+      case "admin":
+        return "/dashboard/admin";
+      default:
+        return "/login";
+    }
+  }, [session.role]);
+
+  const handleSignOut = useCallback(() => {
+    logout();
+    navigate("/login", { replace: true });
+  }, [logout, navigate]);
+
   return (
     <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/70 border-b">
       <div className="container flex h-16 items-center justify-between">
@@ -41,12 +67,28 @@ export default function Header() {
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <Link
-            to="/login"
-            className="hidden sm:inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white bg-gradient-to-br from-primary to-secondary shadow-md hover:shadow-lg transition-shadow"
-          >
-            <MessageSquare className="h-4 w-4" /> Launch App
-          </Link>
+          {session.role ? (
+            <>
+              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
+                <Link to={dashboardHref}>Dashboard</Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+                className="inline-flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" /> Sign out
+              </Button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="hidden sm:inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white bg-gradient-to-br from-primary to-secondary shadow-md hover:shadow-lg transition-shadow"
+            >
+              <MessageSquare className="h-4 w-4" /> Launch App
+            </Link>
+          )}
         </div>
       </div>
     </header>
