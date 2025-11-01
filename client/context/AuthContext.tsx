@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, ReactNode, useEffect } from "react";
 
-export type UserRole = "student" | "counsellor" | null;
+export type UserRole = "student" | "counsellor" | "admin" | null;
 export interface Session {
   role: UserRole;
   institutionCode: string | null;
