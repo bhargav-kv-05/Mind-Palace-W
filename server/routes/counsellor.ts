@@ -97,22 +97,25 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
       gad7Total: typeof doc.gad7Total === "number" ? doc.gad7Total : 0,
     }));
 
-    const recentAlerts = recentAlertsDocs.map((doc) => ({
-      id: doc._id ? String(doc._id) : `${doc.severity}-${doc.createdAt?.valueOf?.() ?? Date.now()}`,
-      severity:
+    const recentAlerts = recentAlertsDocs.map((doc) => {
+      const severity: "low" | "moderate" | "severe" =
         doc.severity === "severe"
           ? "severe"
           : doc.severity === "moderate"
             ? "moderate"
-            : "low",
-      primaryTag: Array.isArray(doc.matches) && doc.matches.length > 0
-        ? String(doc.matches[0]?.tag ?? "") || null
-        : null,
-      createdAt: (doc.createdAt instanceof Date
-        ? doc.createdAt
-        : new Date(doc.createdAt ?? Date.now())
-      ).toISOString(),
-    }));
+            : "low";
+      return {
+        id: doc._id ? String(doc._id) : `${doc.severity}-${doc.createdAt?.valueOf?.() ?? Date.now()}`,
+        severity,
+        primaryTag: Array.isArray(doc.matches) && doc.matches.length > 0
+          ? String(doc.matches[0]?.tag ?? "") || null
+          : null,
+        createdAt: (doc.createdAt instanceof Date
+          ? doc.createdAt
+          : new Date(doc.createdAt ?? Date.now())
+        ).toISOString(),
+      };
+    });
 
     const overview: CounsellorOverview = {
       screenings: {
