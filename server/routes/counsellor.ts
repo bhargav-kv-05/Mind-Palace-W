@@ -15,12 +15,12 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
     (account) =>
       account.role === "volunteer" &&
       (!institutionCode || account.institutionCode === institutionCode),
-  );
+  ) as any[];
   const nominatedVolunteers = counsellorId
-    ? volunteerPool.filter((account) => account.nominatedBy === counsellorId)
+    ? volunteerPool.filter((account: any) => account.nominatedBy === counsellorId)
     : volunteerPool;
   const nominatedCount = nominatedVolunteers.length;
-  const volunteerMembers = nominatedVolunteers.map((account) => ({
+  const volunteerMembers = nominatedVolunteers.map((account: any) => ({
     id: account.id,
     displayName: account.displayName,
     nominatedBy: account.nominatedBy ?? null,
