@@ -45,7 +45,9 @@ export default function Header() {
               <ShieldCheck className="h-5 w-5" />
             </div>
           </div>
-          <span className="font-extrabold tracking-tight text-lg">MindPalace</span>
+          <span className="font-extrabold tracking-tight text-lg">
+            MindPalace
+          </span>
         </Link>
         <nav className="hidden md:flex items-center gap-6">
           {nav.map((item) => (
@@ -68,7 +70,12 @@ export default function Header() {
         <div className="flex items-center gap-3">
           {session.role ? (
             <>
-              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hidden sm:inline-flex"
+                asChild
+              >
                 <Link to={dashboardHref}>Dashboard</Link>
               </Button>
               <Button

@@ -12,7 +12,9 @@ interface Institution {
 export default function Login() {
   const nav = useNavigate();
   const { session, login } = useAuth();
-  const [role, setRole] = useState<"student" | "counsellor" | "admin">("student");
+  const [role, setRole] = useState<"student" | "counsellor" | "admin">(
+    "student",
+  );
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [institutionCode, setInstitutionCode] = useState("");
   const [userId, setUserId] = useState("");
@@ -45,7 +47,12 @@ export default function Login() {
         );
 
       if (role === "student") {
-        login({ role: "student", institutionCode, studentId: userId, anonymousId: null });
+        login({
+          role: "student",
+          institutionCode,
+          studentId: userId,
+          anonymousId: null,
+        });
         nav("/screening", { replace: true });
       } else if (role === "counsellor") {
         login({ role: "counsellor", institutionCode, counsellorId: userId });

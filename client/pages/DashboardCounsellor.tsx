@@ -69,13 +69,17 @@ const anxietySeverityLabels: Record<string, string> = {
   severe: "Severe",
 };
 
-const alertSeverityLabels: Record<CounsellorAlertSummary["severity"], string> = {
-  severe: "Immediate follow-up",
-  moderate: "Check in soon",
-  low: "Monitor",
-};
+const alertSeverityLabels: Record<CounsellorAlertSummary["severity"], string> =
+  {
+    severe: "Immediate follow-up",
+    moderate: "Check in soon",
+    low: "Monitor",
+  };
 
-const alertSeverityVariant: Record<CounsellorAlertSummary["severity"], BadgeProps["variant"]> = {
+const alertSeverityVariant: Record<
+  CounsellorAlertSummary["severity"],
+  BadgeProps["variant"]
+> = {
   severe: "destructive",
   moderate: "default",
   low: "secondary",
@@ -134,7 +138,9 @@ export default function DashboardCounsellor() {
           disabled={loading}
           className="self-start md:self-auto"
         >
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+          />
           {loading ? "Refreshing..." : "Refresh"}
         </Button>
       </header>
@@ -180,8 +186,12 @@ export default function DashboardCounsellor() {
                 <BreakdownChips
                   items={screeningsBySeverity}
                   emptyMessage="No screenings on record yet."
-                  getLabel={(item) => severityLabels[item._id] ?? formatLabel(item._id)}
-                  getVariant={(item) => severityVariantMap[item._id] ?? "secondary"}
+                  getLabel={(item) =>
+                    severityLabels[item._id] ?? formatLabel(item._id)
+                  }
+                  getVariant={(item) =>
+                    severityVariantMap[item._id] ?? "secondary"
+                  }
                 />
               }
             />
@@ -266,7 +276,13 @@ type MetricCardProps = {
   footer?: ReactNode;
 };
 
-function MetricCard({ title, description, value, icon: Icon, footer }: MetricCardProps) {
+function MetricCard({
+  title,
+  description,
+  value,
+  icon: Icon,
+  footer,
+}: MetricCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
@@ -320,11 +336,22 @@ function ScreeningsPanel({ loading, items }: ScreeningsPanelProps) {
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <Badge variant={severityVariantMap[item.phq9Severity] ?? "secondary"}>
-                    PHQ-9 · {severityLabels[item.phq9Severity] ?? item.phq9Severity}
+                  <Badge
+                    variant={
+                      severityVariantMap[item.phq9Severity] ?? "secondary"
+                    }
+                  >
+                    PHQ-9 ·{" "}
+                    {severityLabels[item.phq9Severity] ?? item.phq9Severity}
                   </Badge>
-                  <Badge variant={severityVariantMap[item.gad7Severity] ?? "secondary"}>
-                    GAD-7 · {anxietySeverityLabels[item.gad7Severity] ?? item.gad7Severity}
+                  <Badge
+                    variant={
+                      severityVariantMap[item.gad7Severity] ?? "secondary"
+                    }
+                  >
+                    GAD-7 ·{" "}
+                    {anxietySeverityLabels[item.gad7Severity] ??
+                      item.gad7Severity}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
                     Scores: {item.phq9Total} PHQ · {item.gad7Total} GAD
@@ -364,9 +391,12 @@ function AlertsPanel({ loading, items }: AlertsPanelProps) {
               <li key={alert.id} className="space-y-2 rounded-lg border p-4">
                 <div className="flex items-center justify-between gap-3">
                   <Badge
-                    variant={alertSeverityVariant[alert.severity] ?? "secondary"}
+                    variant={
+                      alertSeverityVariant[alert.severity] ?? "secondary"
+                    }
                   >
-                    {alertSeverityLabels[alert.severity] ?? formatLabel(alert.severity)}
+                    {alertSeverityLabels[alert.severity] ??
+                      formatLabel(alert.severity)}
                   </Badge>
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="h-3.5 w-3.5" />
@@ -374,7 +404,10 @@ function AlertsPanel({ loading, items }: AlertsPanelProps) {
                   </span>
                 </div>
                 {alert.primaryTag ? (
-                  <Badge variant="outline" className="text-xs uppercase tracking-wide">
+                  <Badge
+                    variant="outline"
+                    className="text-xs uppercase tracking-wide"
+                  >
                     #{formatLabel(alert.primaryTag)}
                   </Badge>
                 ) : (
@@ -404,11 +437,18 @@ type VolunteerPanelProps = {
   total: number;
 };
 
-function VolunteerPanel({ loading, members, nominatedCount, total }: VolunteerPanelProps) {
+function VolunteerPanel({
+  loading,
+  members,
+  nominatedCount,
+  total,
+}: VolunteerPanelProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base font-semibold">Peer mentor roster</CardTitle>
+        <CardTitle className="text-base font-semibold">
+          Peer mentor roster
+        </CardTitle>
         <CardDescription>
           Trusted volunteers who can moderate chats when you are offline.
         </CardDescription>
@@ -438,7 +478,8 @@ function VolunteerPanel({ loading, members, nominatedCount, total }: VolunteerPa
       </CardContent>
       <CardFooter className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <span>
-          {formatNumber(nominatedCount)} nominated · {formatNumber(total)} in network
+          {formatNumber(nominatedCount)} nominated · {formatNumber(total)} in
+          network
         </span>
         <Button variant="outline" size="sm" asChild>
           <Link to="/chat">Open moderation center</Link>

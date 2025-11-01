@@ -15,7 +15,9 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
       (!institutionCode || account.institutionCode === institutionCode),
   ) as any[];
   const nominatedVolunteers = counsellorId
-    ? volunteerPool.filter((account: any) => account.nominatedBy === counsellorId)
+    ? volunteerPool.filter(
+        (account: any) => account.nominatedBy === counsellorId,
+      )
     : volunteerPool;
   const nominatedCount = nominatedVolunteers.length;
   const volunteerMembers = nominatedVolunteers.map((account: any) => ({
@@ -76,12 +78,10 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
         .limit(6)
         .project({ severity: 1, matches: 1, createdAt: 1 })
         .toArray(),
-      db
-        .collection("posts")
-        .countDocuments({
-          ...matchInstitution,
-          tone: { $ne: "positive" },
-        }),
+      db.collection("posts").countDocuments({
+        ...matchInstitution,
+        tone: { $ne: "positive" },
+      }),
       db.collection("library").countDocuments(matchInstitution),
     ]);
 
@@ -105,11 +105,14 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
             ? "moderate"
             : "low";
       return {
-        id: doc._id ? String(doc._id) : `${doc.severity}-${doc.createdAt?.valueOf?.() ?? Date.now()}`,
+        id: doc._id
+          ? String(doc._id)
+          : `${doc.severity}-${doc.createdAt?.valueOf?.() ?? Date.now()}`,
         severity,
-        primaryTag: Array.isArray(doc.matches) && doc.matches.length > 0
-          ? String(doc.matches[0]?.tag ?? "") || null
-          : null,
+        primaryTag:
+          Array.isArray(doc.matches) && doc.matches.length > 0
+            ? String(doc.matches[0]?.tag ?? "") || null
+            : null,
         createdAt: (doc.createdAt instanceof Date
           ? doc.createdAt
           : new Date(doc.createdAt ?? Date.now())

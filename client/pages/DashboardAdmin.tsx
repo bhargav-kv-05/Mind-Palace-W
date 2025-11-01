@@ -116,7 +116,9 @@ export default function DashboardAdmin() {
           disabled={loading}
           className="self-start md:self-auto"
         >
-          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`}
+          />
           {loading ? "Refreshing..." : "Refresh"}
         </Button>
       </header>
@@ -165,7 +167,9 @@ export default function DashboardAdmin() {
                   getLabel={(item) =>
                     severityLabels[item._id] ?? formatLabel(item._id)
                   }
-                  getVariant={(item) => severityVariantMap[item._id] ?? "secondary"}
+                  getVariant={(item) =>
+                    severityVariantMap[item._id] ?? "secondary"
+                  }
                 />
               }
             />
@@ -181,7 +185,9 @@ export default function DashboardAdmin() {
                   getLabel={(item) =>
                     severityLabels[item._id] ?? formatLabel(item._id)
                   }
-                  getVariant={(item) => severityVariantMap[item._id] ?? "secondary"}
+                  getVariant={(item) =>
+                    severityVariantMap[item._id] ?? "secondary"
+                  }
                 />
               }
             />
@@ -194,7 +200,9 @@ export default function DashboardAdmin() {
                 <BreakdownChips
                   items={libraryByTone}
                   emptyMessage="No library entries yet."
-                  getLabel={(item) => toneLabels[item._id] ?? formatLabel(item._id)}
+                  getLabel={(item) =>
+                    toneLabels[item._id] ?? formatLabel(item._id)
+                  }
                   getVariant={(item) => toneVariantMap[item._id] ?? "secondary"}
                 />
               }
@@ -213,7 +221,9 @@ export default function DashboardAdmin() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-base font-semibold">Top alert tags</CardTitle>
+              <CardTitle className="text-base font-semibold">
+                Top alert tags
+              </CardTitle>
               <CardDescription>
                 Momentum of flagged topics across campuses
               </CardDescription>
@@ -242,7 +252,13 @@ type MetricCardProps = {
   footer?: ReactNode;
 };
 
-function MetricCard({ title, description, value, icon: Icon, footer }: MetricCardProps) {
+function MetricCard({
+  title,
+  description,
+  value,
+  icon: Icon,
+  footer,
+}: MetricCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">

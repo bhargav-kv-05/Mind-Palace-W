@@ -1,4 +1,11 @@
-import { createContext, useContext, useMemo, useState, ReactNode, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 
 export type UserRole = "student" | "counsellor" | "admin" | null;
 export interface Session {
@@ -9,7 +16,11 @@ export interface Session {
   counsellorId?: string | null;
 }
 
-const AuthCtx = createContext<{ session: Session; login: (s: Session) => void; logout: () => void }>({
+const AuthCtx = createContext<{
+  session: Session;
+  login: (s: Session) => void;
+  logout: () => void;
+}>({
   session: { role: null, institutionCode: null },
   login: () => {},
   logout: () => {},
