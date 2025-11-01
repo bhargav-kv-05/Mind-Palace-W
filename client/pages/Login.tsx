@@ -72,28 +72,37 @@ export default function Login() {
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <div className="inline-flex rounded-full border p-1">
-            <button
-              type="button"
-              onClick={() => setRole("student")}
-              className={`px-4 py-1 text-sm rounded-full ${role === "student" ? "bg-foreground text-background" : ""}`}
-            >
-              Student
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole("counsellor")}
-              className={`px-4 py-1 text-sm rounded-full ${role === "counsellor" ? "bg-foreground text-background" : ""}`}
-            >
-              Counsellor
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole("admin")}
-              className={`px-4 py-1 text-sm rounded-full ${role === "admin" ? "bg-foreground text-background" : ""}`}
-            >
-              Admin
-            </button>
+          <div className="space-y-2">
+            <div className="inline-flex rounded-full border p-1">
+              <button
+                type="button"
+                onClick={() => setRole("student")}
+                className={`px-4 py-1 text-sm rounded-full ${role === "student" ? "bg-foreground text-background" : ""}`}
+              >
+                Student
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole("counsellor")}
+                className={`px-4 py-1 text-sm rounded-full ${role === "counsellor" ? "bg-foreground text-background" : ""}`}
+              >
+                Counsellor
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole("admin")}
+                className={`px-4 py-1 text-sm rounded-full ${role === "admin" ? "bg-foreground text-background" : ""}`}
+              >
+                Admin
+              </button>
+            </div>
+            <p className="text-xs text-foreground/60">
+              {role === "student"
+                ? "Access support, chat, and wellbeing resources"
+                : role === "counsellor"
+                  ? "Monitor student wellbeing and moderate discussions"
+                  : "View institution analytics and insights"}
+            </p>
           </div>
 
           <div>
