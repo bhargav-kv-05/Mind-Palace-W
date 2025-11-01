@@ -1,6 +1,4 @@
 import type { RequestHandler } from "express";
-
-import type { RequestHandler } from "express";
 import type { CounsellorOverview } from "../../shared/api";
 import { mockSeed } from "../../shared/mock-data";
 import { getDb } from "../db/mongo";
