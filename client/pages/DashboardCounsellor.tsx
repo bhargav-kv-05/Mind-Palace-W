@@ -149,7 +149,7 @@ export default function DashboardCounsellor() {
       ) : null}
 
       {overview?.note ? (
-        <Alert variant="secondary">
+        <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Heads up</AlertTitle>
           <AlertDescription>{overview.note}</AlertDescription>
