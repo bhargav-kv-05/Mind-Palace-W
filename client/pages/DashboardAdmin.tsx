@@ -131,7 +131,7 @@ export default function DashboardAdmin() {
       ) : null}
 
       {analytics?.note ? (
-        <Alert variant="secondary">
+        <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Heads up</AlertTitle>
           <AlertDescription>{analytics.note}</AlertDescription>
