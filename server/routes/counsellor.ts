@@ -118,11 +118,11 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
 
     const overview: CounsellorOverview = {
       screenings: {
-        bySeverity: screeningsBySeverity,
+        bySeverity: screeningsBySeverity as any,
         recent: recentScreenings,
       },
       alerts: {
-        bySeverity: alertsBySeverity,
+        bySeverity: alertsBySeverity as any,
         recent: recentAlerts,
       },
       volunteers: {
