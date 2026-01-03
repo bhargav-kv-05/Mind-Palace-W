@@ -54,15 +54,25 @@ export default function Login() {
         login({
           role: "student",
           institutionCode,
+          institutionName: selected.name,
           studentId: userId,
           anonymousId: null,
         });
         nav("/screening", { replace: true });
       } else if (role === "counsellor") {
-        login({ role: "counsellor", institutionCode, counsellorId: userId });
+        login({
+          role: "counsellor",
+          institutionCode,
+          institutionName: selected.name,
+          counsellorId: userId
+        });
         nav("/dashboard/counsellor", { replace: true });
       } else {
-        login({ role: "admin", institutionCode });
+        login({
+          role: "admin",
+          institutionCode,
+          institutionName: selected.name
+        });
         nav("/dashboard/admin", { replace: true });
       }
     } catch (err: any) {
