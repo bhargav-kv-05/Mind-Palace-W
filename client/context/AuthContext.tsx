@@ -11,6 +11,7 @@ export type UserRole = "student" | "counsellor" | "admin" | null;
 export interface Session {
   role: UserRole;
   institutionCode: string | null;
+  institutionName?: string | null;
   studentId?: string | null;
   anonymousId?: string | null;
   counsellorId?: string | null;
