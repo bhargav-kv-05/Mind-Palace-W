@@ -105,7 +105,16 @@ export default function DashboardAdmin() {
         <div>
           <h1 className="text-3xl font-extrabold">Admin Dashboard</h1>
           <p className="text-foreground/70">
-            Institution: {session.institutionCode ?? "All campuses"}
+            {session.institutionName ? (
+              <>
+                <span className="font-medium">{session.institutionName}</span>
+                {session.institutionCode && (
+                  <span className="text-foreground/50"> · {session.institutionCode}</span>
+                )}
+              </>
+            ) : (
+              <>All campuses</>
+            )}
           </p>
         </div>
         <Button
