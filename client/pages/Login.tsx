@@ -78,8 +78,12 @@ export default function Login() {
         <h1 className="text-3xl font-extrabold">Secure Access</h1>
         <p className="mt-2 text-foreground/70">
           Institution Code →{" "}
-          {role === "student" ? "Student ID" : "Counsellor ID"} →
-          Anonymous/Verified session
+          {role === "student"
+            ? "Student ID"
+            : role === "counsellor"
+            ? "Counsellor ID"
+            : "Admin ID"} →
+          {role === "student" ? "Anonymous/Verified session" : "Secure dashboard access"}
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
