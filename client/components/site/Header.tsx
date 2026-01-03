@@ -70,6 +70,20 @@ export default function Header() {
         <div className="flex items-center gap-3">
           {session.role ? (
             <>
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/5 border border-primary/10">
+                <span className="text-xs text-foreground/60">
+                  {session.institutionName ? (
+                    <>
+                      <span className="font-medium text-foreground">{session.institutionName}</span>
+                      {session.institutionCode && (
+                        <span className="text-foreground/40"> ({session.institutionCode})</span>
+                      )}
+                    </>
+                  ) : (
+                    <>All campuses</>
+                  )}
+                </span>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
