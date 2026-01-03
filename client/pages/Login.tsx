@@ -43,7 +43,11 @@ export default function Login() {
       if (!selected) throw new Error("Invalid institution code");
       if (!userId)
         throw new Error(
-          role === "student" ? "Enter Student ID" : "Enter Counsellor ID",
+          role === "student"
+            ? "Enter Student ID"
+            : role === "counsellor"
+            ? "Enter Counsellor ID"
+            : "Enter Admin ID",
         );
 
       if (role === "student") {
