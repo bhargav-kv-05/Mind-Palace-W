@@ -46,8 +46,8 @@ export default function Login() {
           role === "student"
             ? "Enter Student ID"
             : role === "counsellor"
-            ? "Enter Counsellor ID"
-            : "Enter Admin ID",
+              ? "Enter Counsellor ID"
+              : "Enter Admin ID",
         );
 
       if (role === "student") {
@@ -64,14 +64,14 @@ export default function Login() {
           role: "counsellor",
           institutionCode,
           institutionName: selected.name,
-          counsellorId: userId
+          counsellorId: userId,
         });
         nav("/dashboard/counsellor", { replace: true });
       } else {
         login({
           role: "admin",
           institutionCode,
-          institutionName: selected.name
+          institutionName: selected.name,
         });
         nav("/dashboard/admin", { replace: true });
       }
@@ -91,9 +91,12 @@ export default function Login() {
           {role === "student"
             ? "Student ID"
             : role === "counsellor"
-            ? "Counsellor ID"
-            : "Admin ID"} →
-          {role === "student" ? "Anonymous/Verified session" : "Secure dashboard access"}
+              ? "Counsellor ID"
+              : "Admin ID"}{" "}
+          →
+          {role === "student"
+            ? "Anonymous/Verified session"
+            : "Secure dashboard access"}
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
@@ -153,8 +156,8 @@ export default function Login() {
               {role === "student"
                 ? "Student ID"
                 : role === "counsellor"
-                ? "Counsellor ID"
-                : "Admin ID"}
+                  ? "Counsellor ID"
+                  : "Admin ID"}
             </label>
             <input
               className="mt-1 w-full rounded-lg border px-3 py-2"
@@ -164,8 +167,8 @@ export default function Login() {
                 role === "student"
                   ? "UK-21-4587"
                   : role === "counsellor"
-                  ? "UK-PSY-01"
-                  : "ADM-001"
+                    ? "UK-PSY-01"
+                    : "ADM-001"
               }
             />
           </div>

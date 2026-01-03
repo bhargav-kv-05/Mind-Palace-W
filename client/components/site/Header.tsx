@@ -74,9 +74,14 @@ export default function Header() {
                 <span className="text-xs text-foreground/60">
                   {session.institutionName ? (
                     <>
-                      <span className="font-medium text-foreground">{session.institutionName}</span>
+                      <span className="font-medium text-foreground">
+                        {session.institutionName}
+                      </span>
                       {session.institutionCode && (
-                        <span className="text-foreground/40"> ({session.institutionCode})</span>
+                        <span className="text-foreground/40">
+                          {" "}
+                          ({session.institutionCode})
+                        </span>
                       )}
                     </>
                   ) : (

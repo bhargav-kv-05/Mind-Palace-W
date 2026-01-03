@@ -109,7 +109,10 @@ export default function DashboardAdmin() {
               <>
                 <span className="font-medium">{session.institutionName}</span>
                 {session.institutionCode && (
-                  <span className="text-foreground/50"> · {session.institutionCode}</span>
+                  <span className="text-foreground/50">
+                    {" "}
+                    · {session.institutionCode}
+                  </span>
                 )}
               </>
             ) : (

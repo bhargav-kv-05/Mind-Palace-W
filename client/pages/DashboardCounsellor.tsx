@@ -131,7 +131,10 @@ export default function DashboardCounsellor() {
               <>
                 <span className="font-medium">{session.institutionName}</span>
                 {institutionCode && (
-                  <span className="text-foreground/50"> · {institutionCode}</span>
+                  <span className="text-foreground/50">
+                    {" "}
+                    · {institutionCode}
+                  </span>
                 )}
               </>
             ) : (
