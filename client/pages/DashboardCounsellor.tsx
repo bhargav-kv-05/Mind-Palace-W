@@ -126,7 +126,17 @@ export default function DashboardCounsellor() {
         <div>
           <h1 className="text-3xl font-extrabold">Counsellor Dashboard</h1>
           <p className="text-foreground/70">
-            Monitoring {institutionCode ?? "all campuses"}
+            Monitoring{" "}
+            {session.institutionName ? (
+              <>
+                <span className="font-medium">{session.institutionName}</span>
+                {institutionCode && (
+                  <span className="text-foreground/50"> · {institutionCode}</span>
+                )}
+              </>
+            ) : (
+              <>all campuses</>
+            )}
             {counsellorId ? ` · ID ${counsellorId}` : ""}
           </p>
         </div>
