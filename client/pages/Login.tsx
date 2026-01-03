@@ -140,13 +140,23 @@ export default function Login() {
 
           <div>
             <label className="text-sm font-medium">
-              {role === "student" ? "Student ID" : "Counsellor ID"}
+              {role === "student"
+                ? "Student ID"
+                : role === "counsellor"
+                ? "Counsellor ID"
+                : "Admin ID"}
             </label>
             <input
               className="mt-1 w-full rounded-lg border px-3 py-2"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
-              placeholder={role === "student" ? "UK-21-4587" : "UK-PSY-01"}
+              placeholder={
+                role === "student"
+                  ? "UK-21-4587"
+                  : role === "counsellor"
+                  ? "UK-PSY-01"
+                  : "ADM-001"
+              }
             />
           </div>
 
