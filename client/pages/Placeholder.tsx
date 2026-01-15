@@ -15,7 +15,7 @@ export default function Placeholder() {
 
   return (
     <section className="relative">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,theme(colors.primary/15),transparent_60%)]" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.15),transparent_60%)]" />
       <div className="container py-24">
         <div className="max-w-2xl">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-br from-primary via-secondary to-accent bg-clip-text text-transparent">

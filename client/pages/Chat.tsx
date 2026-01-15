@@ -1,21 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "@/context/AuthContext";
 import { api, API_BASE } from "@/lib/api";
 
 export default function ChatPage() {
   const { session } = useAuth();
-  const [tab, setTab] = useState<"live" | "posts" | "library">("live");
+  const [searchParams] = useSearchParams();
+  const [tab, setTab] = useState<"live" | "posts" | "library" | "private">((searchParams.get("tab") as any) || "live");
+
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t) setTab(t as "live" | "posts" | "library" | "private");
+  }, [searchParams]);
+
   return (
     <section className="container py-8">
       <div className="flex items-center gap-2">
-        <button className={`px-4 py-2 rounded-full text-sm ${tab === "live" ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("live")}>Live Chat</button>
+        <button className={`px-4 py-2 rounded-full text-sm ${(tab === "live" || tab === "private") ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("live")}>Live Chat</button>
         <button className={`px-4 py-2 rounded-full text-sm ${tab === "posts" ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("posts")}>Posts</button>
         <button className={`px-4 py-2 rounded-full text-sm ${tab === "library" ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("library")}>Motivational Library</button>
       </div>
       <div className="mt-6">
-        {tab === "live" ? <LiveChat /> : tab === "posts" ? <Posts /> : <LibraryTab />}
+        {(tab === "live" || tab === "private") ? <LiveChat /> : tab === "posts" ? <Posts /> : <LibraryTab />}
       </div>
     </section>
   );
@@ -24,12 +31,46 @@ export default function ChatPage() {
 function LiveChat() {
   const { session } = useAuth();
   const nav = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isModerationMode = searchParams.get("mode") === "moderation";
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState("");
-  const [consent, setConsent] = useState<null | "positive" | "negative" >(null);
+  const [consent, setConsent] = useState<null | "positive" | "negative">(null);
   const [tagsInput, setTagsInput] = useState("");
   const socketRef = useRef<Socket | null>(null);
-  const roomId = useMemo(() => `inst:${session.institutionCode ?? "public"}`, [session.institutionCode]);
+  // Removed duplicate state
+
+
+  // Counselor logic: Check for private intervention params
+  const targetStudentId = searchParams.get("targetStudentId");
+  const isPrivateTab = searchParams.get("tab") === "private";
+  const urlPrivateRoomId = searchParams.get("privateRoomId");
+
+  // Initialize state from URL if present (ROBUSTNESS FIX)
+  const [scope, setScope] = useState<"institution" | "global" | "private">(() => {
+    if (isPrivateTab && (targetStudentId || urlPrivateRoomId)) return "private";
+    return "institution";
+  });
+  const [privateRoomId, setPrivateRoomId] = useState<string | null>(() => {
+    if (urlPrivateRoomId) return urlPrivateRoomId;
+    if (session.role === "counsellor" && targetStudentId) return `private:${session.counsellorId}:${targetStudentId}`;
+    return null;
+  });
+
+  const roomId = useMemo(() => {
+    if (scope === "private" && privateRoomId) return privateRoomId;
+    if (scope === "global") return "global:public";
+    return `inst:${session.institutionCode ?? "public"}`;
+  }, [session.institutionCode, scope, privateRoomId]);
+
+  useEffect(() => {
+    // If counselor opening private tab
+    if (session.role === "counsellor" && isPrivateTab && targetStudentId) {
+      const pRoom = `private:${session.counsellorId}:${targetStudentId}`;
+      setPrivateRoomId(pRoom);
+      setScope("private");
+    }
+  }, [session.role, isPrivateTab, targetStudentId]);
 
   useEffect(() => {
     if (session.role === "student" && !session.anonymousId) {
@@ -38,11 +79,46 @@ function LiveChat() {
     }
     const s = io(API_BASE || window.location.origin, { transports: ["websocket", "polling"] });
     socketRef.current = s;
+    setMessages([]); // Clear messages on switching rooms
+
     s.emit("join", { roomId });
+
+    // Join institution room explicitly if we are in private mode? 
+    // Actually, to receive the invite, the student needs to be in the inst room. 
+    // If the student is currently in 'institution' scope, they are in the inst room. 
+    // If they are in 'global', they might MISS the invite. 
+    // Improvement: Always join 'inst:code' as a control channel?
+    // For now, assume they are in 'institution' (default).
+
+    // Counselor: Emit invite if entering private mode
+    if (scope === "private" && session.role === "counsellor" && targetStudentId) {
+      s.emit("request_private_session", {
+        institutionCode: session.institutionCode,
+        targetStudentId,
+        counsellorId: session.counsellorId
+      });
+    }
+
     s.on("message", (m) => setMessages((prev) => [...prev, m]));
     s.on("alert", (a) => setMessages((prev) => [...prev, { system: true, ...a }]));
+
+    // Student: Listen for invite
+    s.on("private_session_invite", (payload) => {
+      if (session.role === "student" && session.anonymousId === payload.targetStudentId) {
+        // Auto-accept and PERSIST to URL so refresh works
+        setSearchParams(params => {
+          params.set("tab", "private");
+          params.set("privateRoomId", payload.privateRoomId);
+          return params;
+        });
+        // State update will happen automatically via the URL read logic below or we set it here for speed
+        setPrivateRoomId(payload.privateRoomId);
+        setScope("private");
+      }
+    });
+
     return () => { s.disconnect(); };
-  }, [roomId]);
+  }, [roomId, scope]); // Re-run when scope changes to join new room
 
   async function send() {
     if (!text.trim() || !socketRef.current) return;
@@ -62,6 +138,46 @@ function LiveChat() {
 
   return (
     <div className="grid gap-4">
+      {isModerationMode ? (
+        <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-lg flex items-center gap-2 mb-2">
+          <span className="font-bold text-destructive">Moderation Center</span>
+          <span className="text-xs text-muted-foreground">Monitoring all sensitive conversations</span>
+        </div>
+      ) : scope === "private" ? (
+        <div className="bg-purple-100 border border-purple-200 p-3 rounded-lg flex items-center gap-2 mb-2">
+          <span className="font-bold text-purple-700">Private Support Session</span>
+          <span className="text-xs text-purple-600">This conversation is 1:1 and private.</span>
+          <button onClick={() => {
+            if (session.role === "counsellor") {
+              nav("/moderation");
+            } else {
+              setScope("institution");
+            }
+          }} className="ml-auto text-xs underline">Exit</button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 bg-muted/30 p-1 rounded-lg w-fit">
+          {session.role === "counsellor" ? (
+            <span className="text-xs text-muted-foreground px-2">Preview only (Restricted)</span>
+          ) : (
+            <>
+              <button
+                onClick={() => setScope("institution")}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${scope === "institution" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                My University
+              </button>
+              <button
+                onClick={() => setScope("global")}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${scope === "global" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                Global Community
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
       <div className="h-80 overflow-auto rounded-xl border p-3 bg-background">
         {messages.map((m, i) => (
           <div key={i} className="text-sm py-1">
@@ -76,16 +192,18 @@ function LiveChat() {
           </div>
         ))}
       </div>
-      <div className="flex gap-2">
-        <input value={text} onChange={(e) => setText(e.target.value)} className="flex-1 rounded-lg border px-3 py-2" placeholder="Type your message" />
-        <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} className="rounded-lg border px-3 py-2 w-56" placeholder="tags (comma separated)" />
-        <select value={consent ?? ""} onChange={(e) => setConsent(e.target.value ? (e.target.value as any) : null)} className="rounded-lg border px-2">
-          <option value="">No save</option>
-          <option value="positive">Save to Library (Green)</option>
-          <option value="negative">Save to Library (Red)</option>
-        </select>
-        <button onClick={send} className="rounded-full px-4 py-2 bg-gradient-to-br from-primary to-secondary text-white">Send</button>
-      </div>
+      {(session.role !== "counsellor" || scope === "private") && (
+        <div className="flex gap-2">
+          <input value={text} onChange={(e) => setText(e.target.value)} className="flex-1 rounded-lg border px-3 py-2" placeholder="Type your message" />
+          <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} className="rounded-lg border px-3 py-2 w-56" placeholder="tags (comma separated)" />
+          <select value={consent ?? ""} onChange={(e) => setConsent(e.target.value ? (e.target.value as any) : null)} className="rounded-lg border px-2">
+            <option value="">No save</option>
+            <option value="positive">Save to Library (Green)</option>
+            <option value="negative">Save to Library (Red)</option>
+          </select>
+          <button onClick={send} className="rounded-full px-4 py-2 bg-gradient-to-br from-primary to-secondary text-white">Send</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -105,7 +223,7 @@ function Posts() {
 
   async function submit() {
     if (!text.trim()) return;
-    await fetch(api("/api/posts"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ institutionCode: session.institutionCode, authorAnonymousId: session.anonymousId, text, tone: tone || null, tags: tagsInput.split(",").map(t=>t.trim().toLowerCase()).filter(Boolean) }) });
+    await fetch(api("/api/posts"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ institutionCode: session.institutionCode, authorAnonymousId: session.anonymousId, text, tone: tone || null, tags: tagsInput.split(",").map(t => t.trim().toLowerCase()).filter(Boolean) }) });
     setText("");
     setTone("");
     setTagsInput("");
@@ -114,20 +232,22 @@ function Posts() {
 
   return (
     <div className="grid gap-4">
-      <div className="flex gap-2">
-        <input value={text} onChange={(e) => setText(e.target.value)} className="flex-1 rounded-lg border px-3 py-2" placeholder="Share a thought (will be saved)" />
-        <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} className="rounded-lg border px-3 py-2 w-56" placeholder="tags (comma separated)" />
-        <select value={tone ?? ""} onChange={(e) => setTone(e.target.value as any)} className="rounded-lg border px-2">
-          <option value="">No tone</option>
-          <option value="positive">Positive (Green)</option>
-          <option value="negative">Negative (Red)</option>
-        </select>
-        <button onClick={submit} className="rounded-full px-4 py-2 bg-foreground text-background">Post</button>
-      </div>
+      {session.role !== "counsellor" && (
+        <div className="flex gap-2">
+          <input value={text} onChange={(e) => setText(e.target.value)} className="flex-1 rounded-lg border px-3 py-2" placeholder="Share a thought (will be saved)" />
+          <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} className="rounded-lg border px-3 py-2 w-56" placeholder="tags (comma separated)" />
+          <select value={tone ?? ""} onChange={(e) => setTone(e.target.value as any)} className="rounded-lg border px-2">
+            <option value="">No tone</option>
+            <option value="positive">Positive (Green)</option>
+            <option value="negative">Negative (Red)</option>
+          </select>
+          <button onClick={submit} className="rounded-full px-4 py-2 bg-foreground text-background">Post</button>
+        </div>
+      )}
       <div className="grid gap-2">
         {posts.map((p, i) => (
           <div key={i} className="rounded-lg border p-3 text-sm">
-            <div className="text-foreground/60">{new Date(p.createdAt).toLocaleString()} {p.tone ? `• ${p.tone}` : ""} {p.tags?.length ? `• ${p.tags.map((t:string)=>`#${t}`).join(" ")}` : ""}</div>
+            <div className="text-foreground/60">{new Date(p.createdAt).toLocaleString()} {p.tone ? `• ${p.tone}` : ""} {p.tags?.length ? `• ${p.tags.map((t: string) => `#${t}`).join(" ")}` : ""}</div>
             <div>{p.text}</div>
           </div>
         ))}
@@ -137,6 +257,7 @@ function Posts() {
 }
 
 function LibraryTab() {
+  const { session } = useAuth();
   const [tone, setTone] = useState<string>("");
   const [tag, setTag] = useState<string>("");
   const [items, setItems] = useState<any[]>([]);
@@ -150,6 +271,16 @@ function LibraryTab() {
   }
   useEffect(() => { load(); }, []);
 
+  async function hide(id: string) {
+    if (!confirm("Hide this item from students at your university? You can still see it.")) return;
+    await fetch(api(`/api/library/${id}/hide`), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ institutionCode: session.institutionCode })
+    });
+    load();
+  }
+
   return (
     <div className="grid gap-4">
       <div className="flex gap-2">
@@ -159,9 +290,20 @@ function LibraryTab() {
       </div>
       <div className="grid gap-2">
         {items.map((it, i) => (
-          <div key={i} className="rounded-lg border p-3 text-sm">
-            <div className="text-foreground/60">{new Date(it.createdAt).toLocaleString()} {it.tone ? `• ${it.tone}` : ""} {it.tags?.length ? `• ${it.tags.map((t:string)=>`#${t}`).join(" ")}` : ""}</div>
-            <div>{it.text}</div>
+          <div key={i} className="rounded-lg border p-3 text-sm flex justify-between items-start">
+            <div>
+              <div className="text-foreground/60">{new Date(it.createdAt).toLocaleString()} {it.tone ? `• ${it.tone}` : ""} {it.tags?.length ? `• ${it.tags.map((t: string) => `#${t}`).join(" ")}` : ""}</div>
+              <div>{it.text}</div>
+            </div>
+            {session.role === "counsellor" && (
+              <button
+                onClick={() => hide(it._id)}
+                className="text-muted-foreground hover:bg-muted p-1.5 rounded"
+                title="Hide from my campus"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22" /></svg>
+              </button>
+            )}
           </div>
         ))}
       </div>

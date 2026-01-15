@@ -123,7 +123,7 @@ export default function Index() {
 
       {/* CTA */}
       <section id="contact" className="relative">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom,theme(colors.secondary/15),transparent_60%)]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom,hsl(var(--secondary)/0.15),transparent_60%)]" />
         <div className="container py-20 text-center">
           <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
             Launch a stigma-free support system in your institution

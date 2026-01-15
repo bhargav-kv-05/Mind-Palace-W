@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
@@ -39,6 +39,27 @@ export default function ScreeningPage() {
   const [gad7, setGad7] = useState<number[]>(() => Array(GAD7_QUESTIONS.length).fill(0));
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [statusChecked, setStatusChecked] = useState(false);
+  const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (session.institutionCode && session.studentId) {
+      fetch(api(`/api/screenings/latest?institutionCode=${session.institutionCode}&studentId=${session.studentId}`))
+        .then(res => res.json())
+        .then(data => {
+          if (data.needsScreening === false) {
+            // Logic to restore session if needed
+            if (data.studentAnonymousId) {
+              // Silently upgrade session to include anonymousId so they can chat
+              login({ ...session, anonymousId: data.studentAnonymousId });
+            }
+            setDaysRemaining(data.daysRemaining);
+          }
+          setStatusChecked(true);
+        })
+        .catch(() => setStatusChecked(true));
+    }
+  }, [session.institutionCode, session.studentId]);
 
   async function submit() {
     setLoading(true);
@@ -50,6 +71,23 @@ export default function ScreeningPage() {
       login({ ...session, anonymousId: data.studentAnonymousId });
     }
     setLoading(false);
+  }
+
+  if (daysRemaining !== null) {
+    return (
+      <section className="container py-16 flex flex-col items-center text-center">
+        <div className="rounded-full bg-green-100 p-4 mb-4">
+          <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+        </div>
+        <h1 className="text-3xl font-bold mb-2">You're all set!</h1>
+        <p className="text-foreground/70 max-w-md mx-auto mb-8">
+          You have already completed your weekly wellbeing screening. You can continue to use the chat for the next {daysRemaining} days.
+        </p>
+        <button onClick={() => nav("/chat")} className="rounded-full px-8 py-3 bg-gradient-to-br from-primary to-secondary text-white font-semibold transform hover:scale-105 transition-all">
+          Enter Chat
+        </button>
+      </section>
+    );
   }
 
   return (

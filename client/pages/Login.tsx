@@ -30,6 +30,19 @@ export default function Login() {
     });
   }, []);
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (session && session.role) {
+      if (session.role === "student") {
+        nav("/screening", { replace: true });
+      } else if (session.role === "counsellor") {
+        nav("/dashboard/counsellor", { replace: true });
+      } else if (session.role === "admin") {
+        nav("/dashboard/admin", { replace: true });
+      }
+    }
+  }, [session, nav]);
+
   const selected = useMemo(
     () => institutions.find((i) => i.code === institutionCode),
     [institutions, institutionCode],

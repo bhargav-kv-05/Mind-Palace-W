@@ -70,11 +70,11 @@ const anxietySeverityLabels: Record<string, string> = {
 };
 
 const alertSeverityLabels: Record<CounsellorAlertSummary["severity"], string> =
-  {
-    severe: "Immediate follow-up",
-    moderate: "Check in soon",
-    low: "Monitor",
-  };
+{
+  severe: "Immediate follow-up",
+  moderate: "Check in soon",
+  low: "Monitor",
+};
 
 const alertSeverityVariant: Record<
   CounsellorAlertSummary["severity"],
@@ -219,12 +219,12 @@ export default function DashboardCounsellor() {
                   emptyMessage="No alerts raised yet."
                   getLabel={(item) =>
                     alertSeverityLabels[
-                      item._id as CounsellorAlertSummary["severity"]
+                    item._id as CounsellorAlertSummary["severity"]
                     ] ?? formatLabel(item._id)
                   }
                   getVariant={(item) =>
                     alertSeverityVariant[
-                      item._id as CounsellorAlertSummary["severity"]
+                    item._id as CounsellorAlertSummary["severity"]
                     ] ?? "secondary"
                   }
                 />
@@ -495,7 +495,7 @@ function VolunteerPanel({
           network
         </span>
         <Button variant="outline" size="sm" asChild>
-          <Link to="/chat">Open moderation center</Link>
+          <Link to="/moderation">Open moderation center</Link>
         </Button>
       </CardFooter>
     </Card>

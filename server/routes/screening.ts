@@ -104,3 +104,64 @@ export const submitScreening: RequestHandler = async (req, res) => {
 
   return res.json(result);
 };
+export const checkScreeningStatus: RequestHandler = async (req, res) => {
+  const { institutionCode, studentId } = req.query as {
+    institutionCode: string;
+    studentId: string;
+  };
+
+  if (!institutionCode || !studentId) {
+    return res.status(400).json({ error: "Missing parameters" });
+  }
+
+  try {
+    const { getDb } = await import("../db/mongo");
+    const db = await getDb();
+
+    // Find latest screening for this student (using anonMap to resolve ID if possible, or just query by something else?)
+    // Actually, we store studentAnonymousId in the screening, but we might not know it yet if they just logged in.
+    // We need to resolve studentId -> anonId first, OR store studentId in screening (which breaks anonymity potentially, but we need a link).
+    // WAIT: The screening collection currently ONLY stores `studentAnonymousId`. 
+    // To check status by `studentId`, we need to look up the `anonMap` in memory or DB.
+    // The current `anonMap` is in-memory (Map<string, string>). If server restarts, this link is lost!
+    // For specific requirement "weekly basis", we should robustly persist this link or just trust the client session if possible?
+    // No, client session is cleared on logout.
+    // We should probably rely on the in-memory map for the prototype, or (better) check if we can reconstruct it.
+
+    const key = `${institutionCode}:${studentId}`;
+    const knownAnonId = anonMap.get(key);
+
+    if (!knownAnonId) {
+      // If we don't know their anonId, they probably haven't screened or server restarted. 
+      // Treat as "needs screening".
+      return res.json({ needsScreening: true });
+    }
+
+    // Check DB for recent screening
+    const lastScreening = await db.collection("screenings").findOne(
+      { studentAnonymousId: knownAnonId },
+      { sort: { createdAt: -1 } }
+    );
+
+    if (!lastScreening) {
+      return res.json({ needsScreening: true });
+    }
+
+    const diff = Date.now() - new Date(lastScreening.createdAt).getTime();
+    const days = diff / (1000 * 60 * 60 * 24);
+
+    if (days < 7) {
+      return res.json({
+        needsScreening: false,
+        studentAnonymousId: knownAnonId,
+        daysRemaining: Math.ceil(7 - days)
+      });
+    }
+
+    return res.json({ needsScreening: true, lastScreeningDate: lastScreening.createdAt });
+
+  } catch (e) {
+    console.error("Check status failed", e);
+    return res.status(500).json({ error: "Internal error" });
+  }
+};

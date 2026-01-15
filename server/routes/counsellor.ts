@@ -16,8 +16,8 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
   ) as any[];
   const nominatedVolunteers = counsellorId
     ? volunteerPool.filter(
-        (account: any) => account.nominatedBy === counsellorId,
-      )
+      (account: any) => account.nominatedBy === counsellorId,
+    )
     : volunteerPool;
   const nominatedCount = nominatedVolunteers.length;
   const volunteerMembers = nominatedVolunteers.map((account: any) => ({
@@ -31,7 +31,8 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
     const matchInstitution = institutionCode ? { institutionCode } : {};
     const matchAlerts = {
       ...matchInstitution,
-      ...(counsellorId ? { notifyCounsellorId: counsellorId } : {}),
+      // Remove specific counsellor assignment check for now so all inst alerts show up
+      // ...(counsellorId ? { notifyCounsellorId: counsellorId } : {}),
     };
 
     const [
@@ -76,7 +77,7 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
         .find(matchAlerts)
         .sort({ createdAt: -1 })
         .limit(6)
-        .project({ severity: 1, matches: 1, createdAt: 1 })
+        .project({ severity: 1, matches: 1, createdAt: 1, text: 1, keyword: 1, studentAnonymousId: 1 })
         .toArray(),
       db.collection("posts").countDocuments({
         ...matchInstitution,
@@ -109,14 +110,13 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
           ? String(doc._id)
           : `${doc.severity}-${doc.createdAt?.valueOf?.() ?? Date.now()}`,
         severity,
-        primaryTag:
-          Array.isArray(doc.matches) && doc.matches.length > 0
-            ? String(doc.matches[0]?.tag ?? "") || null
-            : null,
+        primaryTag: doc.keyword ?? null,
         createdAt: (doc.createdAt instanceof Date
           ? doc.createdAt
           : new Date(doc.createdAt ?? Date.now())
         ).toISOString(),
+        text: doc.text ?? "Content not available",
+        studentAnonymousId: doc.studentAnonymousId ?? "unknown",
       };
     });
 

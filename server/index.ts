@@ -3,10 +3,10 @@ import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { listInstitutions, listAccounts, getSeed } from "./routes/mock";
-import { assignAnonymousId, submitScreening } from "./routes/screening";
+import { assignAnonymousId, submitScreening, checkScreeningStatus } from "./routes/screening";
 import { checkModeration } from "./routes/moderation";
 import { createPost, listPosts } from "./routes/posts";
-import { listLibrary } from "./routes/library";
+import { listLibrary, hideLibraryItem } from "./routes/library";
 import { getAnalytics } from "./routes/admin";
 import { getCounsellorOverview } from "./routes/counsellor";
 
@@ -48,10 +48,12 @@ export function createServer() {
   // Screening & identity endpoints (prototype)
   app.post("/api/assign-anon-id", assignAnonymousId);
   app.post("/api/screenings", submitScreening);
+  app.get("/api/screenings/latest", checkScreeningStatus); // New route
   app.post("/api/moderation/check", checkModeration);
   app.get("/api/posts", listPosts);
   app.post("/api/posts", createPost);
   app.get("/api/library", listLibrary);
+  app.post("/api/library/:id/hide", hideLibraryItem);
   app.get("/api/admin/analytics", getAnalytics);
   app.get("/api/counsellor/overview", getCounsellorOverview);
 

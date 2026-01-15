@@ -8,25 +8,6 @@ importers:
 
   .:
     dependencies:
-      dotenv:
-        specifier: ^17.2.1
-        version: 17.2.1
-      express:
-        specifier: ^5.1.0
-        version: 5.1.0
-      mongodb:
-        specifier: ^6.20.0
-        version: 6.20.0
-      socket.io:
-        specifier: ^4.8.1
-        version: 4.8.1
-      socket.io-client:
-        specifier: ^4.8.1
-        version: 4.8.1
-      zod:
-        specifier: ^3.25.76
-        version: 3.25.76
-    devDependencies:
       '@hookform/resolvers':
         specifier: ^5.2.1
         version: 5.2.1(react-hook-form@7.62.0(react@18.3.1))
@@ -165,9 +146,15 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
+      dotenv:
+        specifier: ^17.2.1
+        version: 17.2.1
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@18.3.1)
+      express:
+        specifier: ^5.1.0
+        version: 5.1.0
       framer-motion:
         specifier: ^12.23.12
         version: 12.23.12(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -180,6 +167,9 @@ importers:
       lucide-react:
         specifier: ^0.539.0
         version: 0.539.0(react@18.3.1)
+      mongodb:
+        specifier: ^6.20.0
+        version: 6.20.0
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -213,6 +203,12 @@ importers:
       serverless-http:
         specifier: ^3.2.0
         version: 3.2.0
+      socket.io:
+        specifier: ^4.8.1
+        version: 4.8.1
+      socket.io-client:
+        specifier: ^4.8.1
+        version: 4.8.1
       sonner:
         specifier: ^1.7.4
         version: 1.7.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -243,6 +239,9 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@24.2.1)(jiti@1.21.7)(tsx@4.20.3)(yaml@2.8.1)
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
 
 packages:
 
