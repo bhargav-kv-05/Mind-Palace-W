@@ -9,30 +9,12 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
     counsellorId?: string;
   };
 
-  const volunteerPool = mockSeed.accounts.filter(
-    (account) =>
-      account.role === "volunteer" &&
-      (!institutionCode || account.institutionCode === institutionCode),
-  ) as any[];
-  const nominatedVolunteers = counsellorId
-    ? volunteerPool.filter(
-      (account: any) => account.nominatedBy === counsellorId,
-    )
-    : volunteerPool;
-  const nominatedCount = nominatedVolunteers.length;
-  const volunteerMembers = nominatedVolunteers.map((account: any) => ({
-    id: account.id,
-    displayName: account.displayName,
-    nominatedBy: account.nominatedBy ?? null,
-  }));
-
   try {
     const db = await getDb();
     const matchInstitution = institutionCode ? { institutionCode } : {};
     const matchAlerts = {
       ...matchInstitution,
-      // Remove specific counsellor assignment check for now so all inst alerts show up
-      // ...(counsellorId ? { notifyCounsellorId: counsellorId } : {}),
+      status: { $ne: "resolved" },
     };
 
     const [
@@ -42,6 +24,7 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
       recentAlertsDocs,
       postsNeedingResponse,
       resourcesShared,
+      volunteersDocs
     ] = await Promise.all([
       db
         .collection("screenings")
@@ -84,6 +67,7 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
         tone: { $ne: "positive" },
       }),
       db.collection("library").countDocuments(matchInstitution),
+      db.collection("volunteers").find(matchInstitution).toArray()
     ]);
 
     const recentScreenings = recentScreeningsDocs.map((doc) => ({
@@ -120,6 +104,12 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
       };
     });
 
+    const volunteerMembers = volunteersDocs.map((v: any) => ({
+      id: v.studentId,
+      displayName: v.studentId, // For now, use ID as display name
+      nominatedBy: v.nominatedBy
+    }));
+
     const overview: CounsellorOverview = {
       screenings: {
         bySeverity: screeningsBySeverity as any,
@@ -130,9 +120,9 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
         recent: recentAlerts,
       },
       volunteers: {
-        total: volunteerPool.length,
-        active: volunteerPool.length,
-        nominated: nominatedCount,
+        total: volunteersDocs.length,
+        active: volunteersDocs.length,
+        nominated: volunteersDocs.length, // Simplified for now
         members: volunteerMembers,
       },
       community: {
@@ -147,10 +137,10 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
       screenings: { bySeverity: [], recent: [] },
       alerts: { bySeverity: [], recent: [] },
       volunteers: {
-        total: volunteerPool.length,
-        active: volunteerPool.length,
-        nominated: nominatedCount,
-        members: volunteerMembers,
+        total: 0,
+        active: 0,
+        nominated: 0,
+        members: []
       },
       community: {
         postsNeedingResponse: 0,
@@ -159,5 +149,53 @@ export const getCounsellorOverview: RequestHandler = async (req, res) => {
       note: "DB unavailable; returning limited counsellor overview",
     };
     res.json(fallback);
+  }
+};
+
+export const nominateVolunteer: RequestHandler = async (req, res) => {
+  const { institutionCode, studentId, counsellorId } = req.body;
+  if (!institutionCode || !studentId) {
+    res.status(400).json({ error: "Missing required fields" });
+    return;
+  }
+  try {
+    const db = await getDb();
+    // Check if already nominated
+    const existing = await db.collection("volunteers").findOne({
+      institutionCode,
+      studentId
+    });
+
+    if (existing) {
+      res.status(400).json({ error: "Student is already a volunteer" });
+      return;
+    }
+
+    await db.collection("volunteers").insertOne({
+      institutionCode,
+      studentId,
+      nominatedBy: counsellorId,
+      createdAt: new Date(),
+      role: "volunteer"
+    });
+
+    res.json({ success: true, message: "Volunteer nominated successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Nominating volunteer failed" });
+  }
+};
+
+export const getVolunteers: RequestHandler = async (req, res) => {
+  const { institutionCode } = req.query as { institutionCode?: string };
+  if (!institutionCode) {
+    res.status(400).json({ error: "Institution code required" });
+    return;
+  }
+  try {
+    const db = await getDb();
+    const volunteers = await db.collection("volunteers").find({ institutionCode }).toArray();
+    res.json(volunteers);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch volunteers" });
   }
 };

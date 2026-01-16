@@ -64,14 +64,29 @@ export default function Login() {
         );
 
       if (role === "student") {
-        login({
-          role: "student",
-          institutionCode,
-          institutionName: selected.name,
-          studentId: userId,
-          anonymousId: null,
-        });
-        nav("/screening", { replace: true });
+        // Smart Login Check
+        const { api } = await import("@/lib/api");
+        const checkRes = await fetch(api(`/api/auth/check-volunteer?institutionCode=${encodeURIComponent(institutionCode)}&studentId=${encodeURIComponent(userId)}`));
+        const checkData = await checkRes.json();
+
+        if (checkData.isVolunteer) {
+          login({
+            role: "volunteer",
+            institutionCode,
+            institutionName: selected.name,
+            studentId: userId,
+          });
+          nav("/dashboard/volunteer", { replace: true });
+        } else {
+          login({
+            role: "student",
+            institutionCode,
+            institutionName: selected.name,
+            studentId: userId,
+            anonymousId: null,
+          });
+          nav("/screening", { replace: true });
+        }
       } else if (role === "counsellor") {
         login({
           role: "counsellor",

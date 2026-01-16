@@ -15,11 +15,13 @@ import DashboardCounsellor from "./pages/DashboardCounsellor";
 import DashboardAdmin from "./pages/DashboardAdmin";
 import Login from "./pages/Login";
 import Moderation from "./pages/Moderation";
+import DashboardVolunteer from "./pages/DashboardVolunteer";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import ChatPage from "./pages/Chat";
 import LibraryPage from "./pages/Library";
 import ScreeningPage from "./pages/Screening";
+import Legal from "./pages/Legal";
 
 const queryClient = new QueryClient();
 
@@ -34,13 +36,16 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/chat" element={<ProtectedRoute role={["student", "counsellor"]}><ChatPage /></ProtectedRoute>} />
+              <Route path="/chat" element={<ProtectedRoute role={["student", "counsellor", "volunteer", "admin"]}><ChatPage /></ProtectedRoute>} />
               <Route path="/library" element={<ProtectedRoute role="student"><LibraryPage /></ProtectedRoute>} />
+              <Route path="/privacy" element={<Legal />} />
+              <Route path="/terms" element={<Legal />} />
               <Route path="/dashboard" element={<Placeholder />} />
               <Route path="/screening" element={<ProtectedRoute role="student"><ScreeningPage /></ProtectedRoute>} />
               <Route path="/dashboard/student" element={<ProtectedRoute role="student"><DashboardStudent /></ProtectedRoute>} />
               <Route path="/dashboard/counsellor" element={<ProtectedRoute role="counsellor"><DashboardCounsellor /></ProtectedRoute>} />
               <Route path="/moderation" element={<ProtectedRoute role="counsellor"><Moderation /></ProtectedRoute>} />
+              <Route path="/dashboard/volunteer" element={<ProtectedRoute role="volunteer"><DashboardVolunteer /></ProtectedRoute>} />
               <Route path="/dashboard/admin" element={<ProtectedRoute role="admin"><DashboardAdmin /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

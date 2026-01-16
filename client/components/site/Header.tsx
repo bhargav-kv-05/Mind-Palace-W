@@ -25,6 +25,8 @@ export default function Header() {
         return "/dashboard/counsellor";
       case "admin":
         return "/dashboard/admin";
+      case "volunteer":
+        return "/dashboard/volunteer";
       default:
         return "/login";
     }
@@ -50,22 +52,29 @@ export default function Header() {
           </span>
         </Link>
         <nav className="hidden md:flex items-center gap-6">
-          {nav.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                cn(
-                  "text-sm font-medium transition-colors hover:text-foreground/90",
-                  isActive || location.pathname === item.to
-                    ? "text-foreground"
-                    : "text-foreground/60",
-                )
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+          {nav.map((item) => {
+            const isLibrary = item.to === "/library";
+            const href = isLibrary && (session.role === "counsellor" || session.role === "admin" || session.role === "volunteer")
+              ? "/chat?tab=library"
+              : item.to;
+
+            return (
+              <NavLink
+                key={item.to}
+                to={href}
+                className={({ isActive }) =>
+                  cn(
+                    "text-sm font-medium transition-colors hover:text-foreground/90",
+                    isActive || location.pathname === href || (isLibrary && location.search.includes("tab=library"))
+                      ? "text-foreground"
+                      : "text-foreground/60",
+                  )
+                }
+              >
+                {item.label}
+              </NavLink>
+            );
+          })}
         </nav>
         <div className="flex items-center gap-3">
           {session.role ? (

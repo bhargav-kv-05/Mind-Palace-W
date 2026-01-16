@@ -37,6 +37,9 @@ import type {
   CounsellorAlertSummary,
   CounsellorScreeningSummary,
 } from "@shared/api";
+import { Input } from "@/components/ui/input";
+import React from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const severityLabels: Record<string, string> = {
   none: "None",
@@ -274,6 +277,7 @@ export default function DashboardCounsellor() {
             members={volunteerMembers}
             nominatedCount={volunteerNominated}
             total={volunteerTotal}
+            onRefresh={refresh}
           />
         </div>
       </div>
@@ -448,6 +452,7 @@ type VolunteerPanelProps = {
   }[];
   nominatedCount: number;
   total: number;
+  onRefresh: () => void;
 };
 
 function VolunteerPanel({
@@ -455,7 +460,52 @@ function VolunteerPanel({
   members,
   nominatedCount,
   total,
+  onRefresh,
 }: VolunteerPanelProps) {
+  const { session } = useAuth();
+  const [studentId, setStudentId] = React.useState("");
+  const [nominating, setNominating] = React.useState(false);
+  const { toast } = useToast();
+
+  async function handleNominate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!studentId.trim()) return;
+
+    setNominating(true);
+    try {
+      const { api } = await import("@/lib/api");
+      const res = await fetch(api("/api/counsellor/volunteers"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          institutionCode: session.institutionCode,
+          studentId: studentId.trim(),
+          counsellorId: session.counsellorId,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toast({
+          title: "Nomination successful",
+          description: `Student ${studentId} is now a volunteer.`,
+        });
+        setStudentId("");
+        onRefresh();
+      } else {
+        throw new Error(data.error || "Failed to nominate");
+      }
+    } catch (err: any) {
+      toast({
+        title: "Nomination failed",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setNominating(false);
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -463,25 +513,37 @@ function VolunteerPanel({
           Peer mentor roster
         </CardTitle>
         <CardDescription>
-          Trusted volunteers who can moderate chats when you are offline.
+          Trusted volunteers who can moderate chats.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        <form onSubmit={handleNominate} className="flex gap-2">
+          <Input
+            placeholder="Enter Student ID"
+            value={studentId}
+            onChange={(e) => setStudentId(e.target.value)}
+            disabled={nominating}
+            className="flex-1"
+          />
+          <Button type="submit" size="sm" disabled={nominating || !studentId}>
+            {nominating ? "Adding..." : "Nominate"}
+          </Button>
+        </form>
+
         {loading ? (
           <ListSkeleton rows={3} />
         ) : members.length ? (
-          <ul className="space-y-2">
+          <ul className="space-y-2 max-h-[200px] overflow-y-auto">
             {members.map((member) => (
               <li
                 key={member.id}
-                className="flex items-center justify-between gap-3 rounded-lg border p-3"
+                className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm"
               >
-                <span className="font-medium">{member.displayName}</span>
-                {member.nominatedBy ? (
-                  <Badge variant="outline" className="text-xs">
-                    Nominated by {member.nominatedBy}
-                  </Badge>
-                ) : null}
+                <div className="flex flex-col">
+                  <span className="font-medium">{member.displayName}</span>
+                  {member.nominatedBy && <span className="text-xs text-muted-foreground">by {member.nominatedBy}</span>}
+                </div>
+                <Badge variant="secondary" className="text-[10px]">Active</Badge>
               </li>
             ))}
           </ul>
@@ -491,8 +553,7 @@ function VolunteerPanel({
       </CardContent>
       <CardFooter className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <span>
-          {formatNumber(nominatedCount)} nominated · {formatNumber(total)} in
-          network
+          {formatNumber(nominatedCount)} nominated
         </span>
         <Button variant="outline" size="sm" asChild>
           <Link to="/moderation">Open moderation center</Link>

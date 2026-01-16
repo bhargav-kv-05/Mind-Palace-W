@@ -7,28 +7,29 @@ import { api, API_BASE } from "@/lib/api";
 export default function ChatPage() {
   const { session } = useAuth();
   const [searchParams] = useSearchParams();
-  const [tab, setTab] = useState<"live" | "posts" | "library" | "private">((searchParams.get("tab") as any) || "live");
+  const [tab, setTab] = useState<string>((searchParams.get("tab")) || "live");
 
   useEffect(() => {
     const t = searchParams.get("tab");
-    if (t) setTab(t as "live" | "posts" | "library" | "private");
+    if (t) setTab(t);
   }, [searchParams]);
 
   return (
     <section className="container py-8">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2">
         <button className={`px-4 py-2 rounded-full text-sm ${(tab === "live" || tab === "private") ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("live")}>Live Chat</button>
+        <button className={`px-4 py-2 rounded-full text-sm ${tab === "peer_support" ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("peer_support")}>Peer Support</button>
         <button className={`px-4 py-2 rounded-full text-sm ${tab === "posts" ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("posts")}>Posts</button>
         <button className={`px-4 py-2 rounded-full text-sm ${tab === "library" ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("library")}>Motivational Library</button>
       </div>
       <div className="mt-6">
-        {(tab === "live" || tab === "private") ? <LiveChat /> : tab === "posts" ? <Posts /> : <LibraryTab />}
+        {(tab === "live" || tab === "private" || tab === "peer_support") ? <LiveChat activeTab={tab} /> : tab === "posts" ? <Posts /> : <LibraryTab />}
       </div>
     </section>
   );
 }
 
-function LiveChat() {
+function LiveChat({ activeTab }: { activeTab?: string }) {
   const { session } = useAuth();
   const nav = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -38,8 +39,6 @@ function LiveChat() {
   const [consent, setConsent] = useState<null | "positive" | "negative">(null);
   const [tagsInput, setTagsInput] = useState("");
   const socketRef = useRef<Socket | null>(null);
-  // Removed duplicate state
-
 
   // Counselor logic: Check for private intervention params
   const targetStudentId = searchParams.get("targetStudentId");
@@ -47,7 +46,8 @@ function LiveChat() {
   const urlPrivateRoomId = searchParams.get("privateRoomId");
 
   // Initialize state from URL if present (ROBUSTNESS FIX)
-  const [scope, setScope] = useState<"institution" | "global" | "private">(() => {
+  const [scope, setScope] = useState<"institution" | "global" | "private" | "peer_support">(() => {
+    if (activeTab === "peer_support") return "peer_support";
     if (isPrivateTab && (targetStudentId || urlPrivateRoomId)) return "private";
     return "institution";
   });
@@ -57,9 +57,16 @@ function LiveChat() {
     return null;
   });
 
+  // Sync scope with tab prop changes
+  useEffect(() => {
+    if (activeTab === "peer_support") setScope("peer_support");
+    else if (activeTab === "live" && scope === "peer_support") setScope("institution");
+  }, [activeTab]);
+
   const roomId = useMemo(() => {
     if (scope === "private" && privateRoomId) return privateRoomId;
     if (scope === "global") return "global:public";
+    if (scope === "peer_support") return `peer:${session.institutionCode}`;
     return `inst:${session.institutionCode ?? "public"}`;
   }, [session.institutionCode, scope, privateRoomId]);
 
@@ -155,6 +162,11 @@ function LiveChat() {
             }
           }} className="ml-auto text-xs underline">Exit</button>
         </div>
+      ) : scope === "peer_support" ? (
+        <div className="bg-primary/10 border border-primary/20 p-3 rounded-lg flex items-center gap-2 mb-2">
+          <span className="font-bold text-primary">Peer Support Channel</span>
+          <span className="text-xs text-primary/80">Helping students from your university anonymously.</span>
+        </div>
       ) : (
         <div className="flex items-center gap-2 bg-muted/30 p-1 rounded-lg w-fit">
           {session.role === "counsellor" ? (
@@ -185,14 +197,23 @@ function LiveChat() {
               <span className="text-amber-600">[ALERT] {m.severity}</span>
             ) : (
               <>
-                <span className="font-semibold mr-2">{m.authorAnonymousId ?? m.authorRole}</span>
+                <span className="font-semibold mr-2">
+                  {m.authorRole === "volunteer" ? (
+                    <span className="text-primary flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
+                      Volunteer
+                    </span>
+                  ) : (
+                    m.authorAnonymousId ?? m.authorRole
+                  )}
+                </span>
                 <span>{m.text}</span>
               </>
             )}
           </div>
         ))}
       </div>
-      {(session.role !== "counsellor" || scope === "private") && (
+      {(session.role !== "counsellor" && session.role !== "admin" || scope === "private") && (
         <div className="flex gap-2">
           <input value={text} onChange={(e) => setText(e.target.value)} className="flex-1 rounded-lg border px-3 py-2" placeholder="Type your message" />
           <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} className="rounded-lg border px-3 py-2 w-56" placeholder="tags (comma separated)" />
@@ -232,7 +253,7 @@ function Posts() {
 
   return (
     <div className="grid gap-4">
-      {session.role !== "counsellor" && (
+      {session.role !== "counsellor" && session.role !== "admin" && (
         <div className="flex gap-2">
           <input value={text} onChange={(e) => setText(e.target.value)} className="flex-1 rounded-lg border px-3 py-2" placeholder="Share a thought (will be saved)" />
           <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} className="rounded-lg border px-3 py-2 w-56" placeholder="tags (comma separated)" />
@@ -295,7 +316,7 @@ function LibraryTab() {
               <div className="text-foreground/60">{new Date(it.createdAt).toLocaleString()} {it.tone ? `• ${it.tone}` : ""} {it.tags?.length ? `• ${it.tags.map((t: string) => `#${t}`).join(" ")}` : ""}</div>
               <div>{it.text}</div>
             </div>
-            {session.role === "counsellor" && (
+            {(session.role === "counsellor" || session.role === "admin") && (
               <button
                 onClick={() => hide(it._id)}
                 className="text-muted-foreground hover:bg-muted p-1.5 rounded"

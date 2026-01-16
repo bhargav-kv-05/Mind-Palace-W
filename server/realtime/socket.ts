@@ -4,8 +4,8 @@ import { analyzeText, escalation } from "../../shared/sensitive";
 export function wireSocketIO(io: Server) {
   io.on("connection", (socket: Socket) => {
     socket.on("join", ({ roomId }: { roomId: string }) => {
-      // Allow joining valid rooms: "inst:...", "global:...", or "private:..."
-      if (roomId && (roomId.startsWith("inst:") || roomId.startsWith("global:") || roomId.startsWith("private:"))) {
+      // Allow joining valid rooms: "inst:...", "global:...", "peer:...", or "private:..."
+      if (roomId && (roomId.startsWith("inst:") || roomId.startsWith("global:") || roomId.startsWith("private:") || roomId.startsWith("peer:"))) {
         socket.join(roomId);
       }
     });
