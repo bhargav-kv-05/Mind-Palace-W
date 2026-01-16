@@ -7,7 +7,7 @@ import {
   useEffect,
 } from "react";
 
-export type UserRole = "student" | "counsellor" | "admin" | null;
+export type UserRole = "student" | "counsellor" | "volunteer" | "admin" | null;
 export interface Session {
   role: UserRole;
   institutionCode: string | null;
@@ -23,8 +23,8 @@ const AuthCtx = createContext<{
   logout: () => void;
 }>({
   session: { role: null, institutionCode: null },
-  login: () => {},
-  logout: () => {},
+  login: () => { },
+  logout: () => { },
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {

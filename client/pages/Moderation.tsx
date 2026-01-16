@@ -44,9 +44,24 @@ export default function Moderation() {
         }
     }, [session]);
 
-    const resolveAlert = (id: string) => {
-        // Optimistic update for prototype (no backend endpoint yet for resolution)
+    const resolveAlert = async (id: string) => {
+        if (!window.confirm("Are you sure you want to mark this issue as resolved?")) {
+            return;
+        }
+
+        // Optimistic update
         setAlerts(prev => prev.filter(a => a.id !== id));
+
+        try {
+            await fetch(api("/api/moderation/resolve"), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id })
+            });
+        } catch (e) {
+            console.error("Failed to sync resolution", e);
+            // Optionally revert logic here if stricter data consistency is needed
+        }
     };
 
     return (

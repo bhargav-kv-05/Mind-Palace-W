@@ -8,6 +8,7 @@ import {
   RefreshCw,
   ShieldAlert,
   Tag,
+  Users,
 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -224,6 +225,12 @@ export default function DashboardAdmin() {
               description="Threads and responses"
               value={postsTotal}
               icon={MessageSquare}
+            />
+            <MetricCard
+              title="Active Volunteers"
+              description="Nominated peer support"
+              value={analytics?.volunteers?.total ?? 0}
+              icon={Users}
             />
           </>
         )}

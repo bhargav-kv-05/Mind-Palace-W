@@ -33,12 +33,14 @@ export const getAnalytics: RequestHandler = async (req, res) => {
     ]).toArray();
 
     const postsTotal = await db.collection("posts").countDocuments(matchInst);
+    const volunteersTotal = await db.collection("volunteers").countDocuments(matchInst);
 
     res.json({
       screenings: { bySeverity: screeningsAgg, total: screeningsTotal },
       alerts: { bySeverity: alertsBySeverity, topTags },
       library: { byTone: libraryStats },
       posts: { total: postsTotal },
+      volunteers: { total: volunteersTotal },
     });
   } catch (e) {
     res.json({
@@ -46,6 +48,7 @@ export const getAnalytics: RequestHandler = async (req, res) => {
       alerts: { bySeverity: [], topTags: [] },
       library: { byTone: [] },
       posts: { total: 0 },
+      volunteers: { total: 0 },
       note: "DB unavailable; returning empty analytics",
     });
   }

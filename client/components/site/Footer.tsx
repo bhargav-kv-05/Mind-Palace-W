@@ -10,14 +10,7 @@ export default function Footer() {
             Secure, anonymous, and humanized psychological support for students in J&K and beyond.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <h4 className="text-sm font-semibold mb-2">Platform</h4>
-            <ul className="space-y-1 text-sm text-foreground/70">
-              <li><Link to="/chat" className="hover:text-foreground">Ephemeral Chat</Link></li>
-              <li><Link to="/dashboard" className="hover:text-foreground">Admin Dashboard</Link></li>
-            </ul>
-          </div>
+        <div className="flex justify-start md:justify-end gap-6 items-start">
           <div>
             <h4 className="text-sm font-semibold mb-2">Legal</h4>
             <ul className="space-y-1 text-sm text-foreground/70">

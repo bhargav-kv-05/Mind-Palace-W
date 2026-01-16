@@ -4,11 +4,12 @@ import cors from "cors";
 import { handleDemo } from "./routes/demo";
 import { listInstitutions, listAccounts, getSeed } from "./routes/mock";
 import { assignAnonymousId, submitScreening, checkScreeningStatus } from "./routes/screening";
-import { checkModeration } from "./routes/moderation";
+import { checkModeration, resolveAlert } from "./routes/moderation";
 import { createPost, listPosts } from "./routes/posts";
 import { listLibrary, hideLibraryItem } from "./routes/library";
 import { getAnalytics } from "./routes/admin";
-import { getCounsellorOverview } from "./routes/counsellor";
+import { getCounsellorOverview, nominateVolunteer, getVolunteers } from "./routes/counsellor";
+import { checkVolunteerStatus } from "./routes/auth";
 
 export function createServer() {
   const app = express();
@@ -50,12 +51,16 @@ export function createServer() {
   app.post("/api/screenings", submitScreening);
   app.get("/api/screenings/latest", checkScreeningStatus); // New route
   app.post("/api/moderation/check", checkModeration);
+  app.post("/api/moderation/resolve", resolveAlert);
   app.get("/api/posts", listPosts);
   app.post("/api/posts", createPost);
   app.get("/api/library", listLibrary);
   app.post("/api/library/:id/hide", hideLibraryItem);
   app.get("/api/admin/analytics", getAnalytics);
   app.get("/api/counsellor/overview", getCounsellorOverview);
+  app.post("/api/counsellor/volunteers", nominateVolunteer);
+  app.get("/api/counsellor/volunteers", getVolunteers);
+  app.get("/api/auth/check-volunteer", checkVolunteerStatus);
 
   return app;
 }

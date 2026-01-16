@@ -143,5 +143,8 @@ export interface AdminAnalytics {
   posts: {
     total: number;
   };
+  volunteers?: {
+    total: number;
+  };
   note?: string;
 }

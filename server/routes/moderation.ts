@@ -20,8 +20,8 @@ export const checkModeration: RequestHandler = (req, res) => {
   // Prototype routing to a counsellor for institution
   const counsellor = institutionCode
     ? mockSeed.accounts.find(
-        (a) => a.role === "counsellor" && a.institutionCode === institutionCode,
-      )
+      (a) => a.role === "counsellor" && a.institutionCode === institutionCode,
+    )
     : undefined;
 
   // In production: push Socket.io event to counsellor/volunteer; here persist alert
@@ -50,4 +50,31 @@ export const checkModeration: RequestHandler = (req, res) => {
     matches: result.matches,
     notifyCounsellorId: counsellor ? (counsellor as any).counsellorId : null,
   });
+};
+
+export const resolveAlert: RequestHandler = async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    res.status(400).json({ error: "Missing alert ID" });
+    return;
+  }
+
+  try {
+    const { getDb } = await import("../db/mongo");
+    const { ObjectId } = await import("mongodb");
+    const db = await getDb();
+
+    // Construct query to handle both ObjectId and string IDs (legacy)
+    const query = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { _id: id };
+
+    await db.collection("alerts").updateOne(
+      query,
+      { $set: { status: "resolved", resolvedAt: new Date() } }
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Resolve failed", error);
+    res.status(500).json({ error: "Failed to resolve alert" });
+  }
 };

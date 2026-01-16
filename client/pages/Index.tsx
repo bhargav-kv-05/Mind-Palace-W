@@ -102,7 +102,7 @@ export default function Index() {
                 <FeatureCard icon={<MessageSquare className="h-5 w-5" />} title="Ephemeral Chats" desc="Disappearing by default with consent-based saves." />
                 <FeatureCard icon={<LibraryBig className="h-5 w-5" />} title="Motivational Library" desc="Real, anonymized peer messages as fallback support." />
                 <FeatureCard icon={<Users2 className="h-5 w-5" />} title="Verified Network" desc="Counsellors + nominated student volunteers." />
-                <FeatureCard icon={<Languages className="h-5 w-5" />} title="Multilingual" desc="NLP/Translate API for regional languages." />
+                <FeatureCard icon={<Languages className="h-5 w-5" />} title="Multilingual (Coming Soon)" desc="Planned: NLP translation for regional languages." />
               </div>
               <div className="mt-6 rounded-xl bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-4 text-sm">
                 If severe distress is detected, we escalate with care: motivational buffer → notify moderator → emergency mapping when required.
