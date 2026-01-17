@@ -141,12 +141,14 @@ export const checkScreeningStatus: RequestHandler = async (req, res) => {
 
     if (days < 7) {
       // User has valid screening.
-      // Note: We return the *new* fresh ID logic in assignment, 
-      // but here we just confirm they don't need to re-screen.
+      // Generate a FRESH anonymous ID here so they can enter chat immediately
+      // This satisfies privacy (new ID) and functionality (session needs and ID)
+      const newAnonId = generateAnonymousId(institutionCode);
+
       return res.json({
         needsScreening: false,
-        daysRemaining: Math.ceil(7 - days),
-        // We do NOT return old anonId effectively ensuring rotation if FE requests new one
+        studentAnonymousId: newAnonId,
+        daysRemaining: Math.ceil(7 - days)
       });
     }
 
