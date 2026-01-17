@@ -2,8 +2,14 @@ import { RequestHandler } from "express";
 import { ScreeningPayload, ScreeningResult } from "../../shared/api";
 import { mockSeed } from "../../shared/mock-data";
 import { generateAnonymousId } from "../utils/ids";
+import * as crypto from "crypto";
 
-const anonMap = new Map<string, string>(); // key: institutionCode:studentId -> anonId
+function hashStudentId(institutionCode: string, studentId: string): string {
+  return crypto
+    .createHash("sha256")
+    .update(`${institutionCode}:${studentId}`)
+    .digest("hex");
+}
 
 function phq9Severity(total: number): ScreeningResult["phq9Severity"] {
   if (total <= 4) return "none";
@@ -30,12 +36,9 @@ export const assignAnonymousId: RequestHandler = (req, res) => {
       .status(400)
       .json({ error: "institutionCode and studentId are required" });
   }
-  const key = `${institutionCode}:${studentId}`;
-  let anon = anonMap.get(key);
-  if (!anon) {
-    anon = generateAnonymousId(institutionCode);
-    anonMap.set(key, anon);
-  }
+
+  // Always generate a fresh Anonymous ID for privacy/rotation
+  const anon = generateAnonymousId(institutionCode);
   res.json({ anonymousId: anon });
 };
 
@@ -55,16 +58,17 @@ export const submitScreening: RequestHandler = async (req, res) => {
       .json({ error: "PHQ-9 must have 9 items, GAD-7 must have 7 items" });
   }
 
+  // Ensure we have an Anonymous ID (client provided or generate new)
   let anonId = payload.studentAnonymousId;
-  if (!anonId && payload.studentId) {
-    const key = `${payload.institutionCode}:${payload.studentId}`;
-    anonId = anonMap.get(key) ?? generateAnonymousId(payload.institutionCode);
-    anonMap.set(key, anonId);
-  }
   if (!anonId) {
-    return res
-      .status(400)
-      .json({ error: "Provide studentAnonymousId or studentId" });
+    // Fallback if client didn't assist
+    anonId = generateAnonymousId(payload.institutionCode);
+  }
+
+  // Calculate Hash for persistence
+  let studentIdHash: string | null = null;
+  if (payload.studentId) {
+    studentIdHash = hashStudentId(payload.institutionCode, payload.studentId);
   }
 
   const phq9Total = payload.phq9.reduce((a, b) => a + (Number(b) || 0), 0);
@@ -91,6 +95,7 @@ export const submitScreening: RequestHandler = async (req, res) => {
     const doc = {
       institutionCode: payload.institutionCode,
       studentAnonymousId: anonId,
+      studentIdHash, // Store hash to link future logins without revealing ID
       phq9: payload.phq9,
       gad7: payload.gad7,
       ...result,
@@ -98,12 +103,12 @@ export const submitScreening: RequestHandler = async (req, res) => {
     };
     await db.collection("screenings").insertOne(doc);
   } catch (e) {
-    // Non-fatal in prototype
     console.error("Failed to persist screening:", e);
   }
 
   return res.json(result);
 };
+
 export const checkScreeningStatus: RequestHandler = async (req, res) => {
   const { institutionCode, studentId } = req.query as {
     institutionCode: string;
@@ -118,28 +123,12 @@ export const checkScreeningStatus: RequestHandler = async (req, res) => {
     const { getDb } = await import("../db/mongo");
     const db = await getDb();
 
-    // Find latest screening for this student (using anonMap to resolve ID if possible, or just query by something else?)
-    // Actually, we store studentAnonymousId in the screening, but we might not know it yet if they just logged in.
-    // We need to resolve studentId -> anonId first, OR store studentId in screening (which breaks anonymity potentially, but we need a link).
-    // WAIT: The screening collection currently ONLY stores `studentAnonymousId`. 
-    // To check status by `studentId`, we need to look up the `anonMap` in memory or DB.
-    // The current `anonMap` is in-memory (Map<string, string>). If server restarts, this link is lost!
-    // For specific requirement "weekly basis", we should robustly persist this link or just trust the client session if possible?
-    // No, client session is cleared on logout.
-    // We should probably rely on the in-memory map for the prototype, or (better) check if we can reconstruct it.
+    // 1. Calculate Hash of the current user
+    const currentHash = hashStudentId(institutionCode, studentId);
 
-    const key = `${institutionCode}:${studentId}`;
-    const knownAnonId = anonMap.get(key);
-
-    if (!knownAnonId) {
-      // If we don't know their anonId, they probably haven't screened or server restarted. 
-      // Treat as "needs screening".
-      return res.json({ needsScreening: true });
-    }
-
-    // Check DB for recent screening
+    // 2. Find latest screening by this HASH
     const lastScreening = await db.collection("screenings").findOne(
-      { studentAnonymousId: knownAnonId },
+      { studentIdHash: currentHash },
       { sort: { createdAt: -1 } }
     );
 
@@ -151,10 +140,13 @@ export const checkScreeningStatus: RequestHandler = async (req, res) => {
     const days = diff / (1000 * 60 * 60 * 24);
 
     if (days < 7) {
+      // User has valid screening.
+      // Note: We return the *new* fresh ID logic in assignment, 
+      // but here we just confirm they don't need to re-screen.
       return res.json({
         needsScreening: false,
-        studentAnonymousId: knownAnonId,
-        daysRemaining: Math.ceil(7 - days)
+        daysRemaining: Math.ceil(7 - days),
+        // We do NOT return old anonId effectively ensuring rotation if FE requests new one
       });
     }
 
