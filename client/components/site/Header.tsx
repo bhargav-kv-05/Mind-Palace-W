@@ -54,25 +54,39 @@ export default function Header() {
         <nav className="hidden md:flex items-center gap-6">
           {nav.map((item) => {
             const isLibrary = item.to === "/library";
-            const href = isLibrary && (session.role === "counsellor" || session.role === "admin" || session.role === "volunteer")
-              ? "/chat?tab=library"
-              : item.to;
+            const isHome = item.to === "/";
+
+            // Smart Link Logic:
+            // 1. Home -> Dashboard (if logged in)
+            // 2. Library -> Chat Tab (if moderator)
+            // 3. Chat -> Chat (standard)
+            let href = item.to;
+            if (isHome && session.role) href = dashboardHref;
+            else if (isLibrary && (session.role === "counsellor" || session.role === "admin" || session.role === "volunteer")) href = "/chat?tab=library";
+
+            // Strict Active State Calculation (Manual)
+            let isActive = false;
+            if (isHome) {
+              isActive = location.pathname === "/" && !session.role; // Only active on landing page if not redirected
+            } else if (item.to === "/chat") {
+              // Chat is active ONLY if /chat AND NOT library tab
+              isActive = location.pathname === "/chat" && !location.search.includes("tab=library");
+            } else if (isLibrary) {
+              // Library is active if /library OR (/chat AND library tab)
+              isActive = location.pathname === "/library" || (location.pathname === "/chat" && location.search.includes("tab=library"));
+            }
 
             return (
-              <NavLink
+              <Link
                 key={item.to}
                 to={href}
-                className={({ isActive }) =>
-                  cn(
-                    "text-sm font-medium transition-colors hover:text-foreground/90",
-                    isActive || location.pathname === href || (isLibrary && location.search.includes("tab=library"))
-                      ? "text-foreground"
-                      : "text-foreground/60",
-                  )
-                }
+                className={cn(
+                  "text-sm font-medium transition-colors hover:text-foreground/90",
+                  isActive ? "text-foreground" : "text-foreground/60"
+                )}
               >
                 {item.label}
-              </NavLink>
+              </Link>
             );
           })}
         </nav>

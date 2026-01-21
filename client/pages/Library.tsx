@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 
+import { useAuth } from "@/context/AuthContext";
+
 export default function LibraryPage() {
+  const { session } = useAuth();
   const [tone, setTone] = useState<string>("");
   const [tag, setTag] = useState<string>("");
   const [items, setItems] = useState<any[]>([]);
@@ -10,10 +13,17 @@ export default function LibraryPage() {
     const qs = new URLSearchParams();
     if (tone) qs.set("tone", tone);
     if (tag) qs.set("tag", tag);
+    // CRITICAL FIX: Pass viewer's institution code AND ROLE (Same as Chat.tsx)
+    if (session.institutionCode) {
+      qs.set("viewerInstitutionCode", session.institutionCode);
+    }
+    if (session.role) {
+      qs.set("viewerRole", session.role);
+    }
     const res = await fetch(api(`/api/library?${qs.toString()}`));
     setItems(await res.json());
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [session]); // Re-load when session loads
 
   return (
     <section className="container py-8">

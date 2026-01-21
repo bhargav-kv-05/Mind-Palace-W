@@ -12,6 +12,7 @@ export default function ChatPage() {
   useEffect(() => {
     const t = searchParams.get("tab");
     if (t) setTab(t);
+    else setTab("live"); // CRITICAL FIX: Reset to "live" if tab param is removed (e.g. clicking "Chat" header)
   }, [searchParams]);
 
   return (
@@ -287,6 +288,13 @@ function LibraryTab() {
     const qs = new URLSearchParams();
     if (tone) qs.set("tone", tone);
     if (tag) qs.set("tag", tag);
+    // CRITICAL FIX: Pass viewer's institution code AND ROLE
+    if (session.institutionCode) {
+      qs.set("viewerInstitutionCode", session.institutionCode);
+    }
+    if (session.role) {
+      qs.set("viewerRole", session.role);
+    }
     const res = await fetch(api(`/api/library?${qs.toString()}`));
     setItems(await res.json());
   }

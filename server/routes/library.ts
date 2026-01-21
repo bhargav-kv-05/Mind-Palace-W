@@ -21,8 +21,11 @@ export const listLibrary: RequestHandler = async (req, res) => {
     // Let's check `req.query.viewerInstitutionCode` or similar. 
     // For now, I'll assume the frontend will pass `viewerInstitutionCode`.
     const viewerCode = (req.query.viewerInstitutionCode as string) || (req.query.institutionCode as string);
+    const viewerRole = req.query.viewerRole as string;
 
-    if (viewerCode) {
+    // Only filter out hidden items if the viewer is a STUDENT (or unknown)
+    // Counsellors and Admins must see everything to be able to manage/unhide them
+    if (viewerCode && viewerRole !== "counsellor" && viewerRole !== "admin") {
       q.hiddenFromInstitutions = { $ne: viewerCode };
     }
 
