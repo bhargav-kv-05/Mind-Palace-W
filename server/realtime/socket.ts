@@ -33,6 +33,19 @@ export function wireSocketIO(io: Server) {
         tags?: string[];
       }) => {
         try {
+          // SECURITY: PII Blocking (Phone Numbers & Email)
+          // Matches 10-digit numbers (Indian mobile) or email patterns
+          const piiRegex = /(\b\d{10}\b)|(\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b)/;
+
+          if (piiRegex.test(payload.text)) {
+            // Block the message!
+            socket.emit("alert", {
+              severity: "high",
+              text: "Your message was blocked because it contains a phone number or email. Sharing personal contact info is not allowed for your safety."
+            });
+            return; // Stop execution, do not emit to room
+          }
+
           // 1. Optimistic UI: Send to room immediately
           io.to(payload.roomId).emit("message", { ...payload, createdAt: new Date() });
 

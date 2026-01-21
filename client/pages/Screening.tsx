@@ -100,12 +100,43 @@ export default function ScreeningPage() {
       </div>
       <div className="mt-6 flex gap-3">
         <button disabled={loading} onClick={submit} className="rounded-full px-5 py-2.5 bg-gradient-to-br from-primary to-secondary text-white">{loading ? "Submitting..." : "Submit"}</button>
-        {result && <button onClick={() => nav("/chat")} className="rounded-full px-5 py-2.5 border">Go to Chat</button>}
       </div>
+      {/* Result Modal Overlay */}
       {result && (
-        <div className="mt-6 rounded-xl border p-4">
-          <div className="font-semibold">Results</div>
-          <div className="text-sm text-foreground/70">PHQ-9: {result.phq9Total} ({result.phq9Severity}), GAD-7: {result.gad7Total} ({result.gad7Severity})</div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-background rounded-2xl shadow-xl border p-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-center mb-4">
+              <div className="bg-green-100 p-3 rounded-full">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-center mb-2">Screening Complete</h2>
+            <p className="text-center text-foreground/70 mb-6">
+              Thank you for checking in. Here represents your current wellbeing snapshot.
+            </p>
+
+            <div className="space-y-3 mb-8">
+              <div className="flex justify-between items-center p-3 bg-muted rounded-lg border">
+                <span className="font-semibold">Depression (PHQ-9)</span>
+                <span className="px-3 py-1 bg-background rounded-md text-sm font-medium border shadow-sm capitalize">
+                  {result.phq9Severity.replace("_", " ")}
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-muted rounded-lg border">
+                <span className="font-semibold">Anxiety (GAD-7)</span>
+                <span className="px-3 py-1 bg-background rounded-md text-sm font-medium border shadow-sm capitalize">
+                  {result.gad7Severity.replace("_", " ")}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => nav("/chat")}
+              className="w-full rounded-full py-3.5 bg-gradient-to-br from-primary to-secondary text-white font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
+            >
+              Proceed to Chat
+            </button>
+          </div>
         </div>
       )}
     </section>
