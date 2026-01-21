@@ -1,6 +1,8 @@
 export const SENSITIVE_KEYWORDS = [
     "suicide",
+    "suicidal",
     "kill myself",
+    "killing myself",
     "kill me",
     "want to die",
     "end my life",
@@ -24,7 +26,7 @@ export function detectSensitiveContent(text: string): { flagged: boolean; keywor
         if (lower.includes(word)) {
             // Basic severity logic: immediate threats are severe
             let severity: "low" | "moderate" | "severe" = "moderate";
-            if (word === "suicide" || word.includes("kill") || word.includes("die") || word.includes("end my life")) {
+            if (word === "suicide" || word === "suicidal" || word.includes("kill") || word.includes("die") || word.includes("end my life")) {
                 severity = "severe";
             }
             return { flagged: true, keyword: word, severity };

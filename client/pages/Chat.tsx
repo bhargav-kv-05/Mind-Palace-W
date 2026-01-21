@@ -6,7 +6,7 @@ import { api, API_BASE } from "@/lib/api";
 
 export default function ChatPage() {
   const { session } = useAuth();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tab, setTab] = useState<string>((searchParams.get("tab")) || "live");
 
   useEffect(() => {
@@ -15,13 +15,42 @@ export default function ChatPage() {
     else setTab("live"); // CRITICAL FIX: Reset to "live" if tab param is removed (e.g. clicking "Chat" header)
   }, [searchParams]);
 
+  // CONTROL CHANNEL: Listen for invites globally (even if in Posts/Library tab)
+  useEffect(() => {
+    if (session.role !== "student" || !session.institutionCode || !session.anonymousId) return;
+
+    const s = io(API_BASE || window.location.origin, { transports: ["websocket", "polling"] });
+    s.emit("join", { roomId: `inst:${session.institutionCode}` });
+
+    s.on("private_session_invite", (payload) => {
+      if (session.anonymousId === payload.targetStudentId) {
+        // Auto-accept: Switch tab and set query params
+        setSearchParams(params => {
+          params.set("tab", "private");
+          params.set("privateRoomId", payload.privateRoomId);
+          return params;
+        });
+      }
+    });
+
+    return () => { s.disconnect(); };
+  }, [session.role, session.institutionCode, session.anonymousId, setSearchParams]);
+
+  // CONTROL CHANNEL: Listen for invites globally (even if in Posts/Library tab)
+
+
   return (
     <section className="container py-8">
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        <button className={`px-4 py-2 rounded-full text-sm ${(tab === "live" || tab === "private") ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("live")}>Live Chat</button>
-        <button className={`px-4 py-2 rounded-full text-sm ${tab === "peer_support" ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("peer_support")}>Peer Support</button>
-        <button className={`px-4 py-2 rounded-full text-sm ${tab === "posts" ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("posts")}>Posts</button>
-        <button className={`px-4 py-2 rounded-full text-sm ${tab === "library" ? "bg-foreground text-background" : "border"}`} onClick={() => setTab("library")}>Motivational Library</button>
+        <button
+          className={`px-4 py-2 rounded-full text-sm transition-colors ${(tab === "live" || tab === "private") ? (tab === "private" ? "bg-purple-600 text-white border-purple-600" : "bg-foreground text-background") : "border"}`}
+          onClick={() => setSearchParams({ tab: "live" })}
+        >
+          {tab === "private" ? "Private Session" : "Live Chat"}
+        </button>
+        <button className={`px-4 py-2 rounded-full text-sm ${tab === "peer_support" ? "bg-foreground text-background" : "border"}`} onClick={() => setSearchParams({ tab: "peer_support" })}>Peer Support</button>
+        <button className={`px-4 py-2 rounded-full text-sm ${tab === "posts" ? "bg-foreground text-background" : "border"}`} onClick={() => setSearchParams({ tab: "posts" })}>Posts</button>
+        <button className={`px-4 py-2 rounded-full text-sm ${tab === "library" ? "bg-foreground text-background" : "border"}`} onClick={() => setSearchParams({ tab: "library" })}>Motivational Library</button>
       </div>
       <div className="mt-6">
         {(tab === "live" || tab === "private" || tab === "peer_support") ? <LiveChat activeTab={tab} /> : tab === "posts" ? <Posts /> : <LibraryTab />}
@@ -64,6 +93,20 @@ function LiveChat({ activeTab }: { activeTab?: string }) {
     else if (activeTab === "live" && scope === "peer_support") setScope("institution");
   }, [activeTab]);
 
+  // CRITICAL FIX: React to URL changes dynamically (for the Global Invite redirect)
+  useEffect(() => {
+    // For Students: tab=private + privateRoomId (targetStudentId is optional/missing)
+    // For Counselors: tab=private + targetStudentId
+    if (isPrivateTab && (targetStudentId || urlPrivateRoomId)) {
+      setScope("private");
+      if (urlPrivateRoomId) {
+        setPrivateRoomId(urlPrivateRoomId);
+      } else if (session.role === "counsellor" && targetStudentId) {
+        setPrivateRoomId(`private:${session.counsellorId}:${targetStudentId}`);
+      }
+    }
+  }, [isPrivateTab, targetStudentId, urlPrivateRoomId, session.role, session.counsellorId]);
+
   const roomId = useMemo(() => {
     if (scope === "private" && privateRoomId) return privateRoomId;
     if (scope === "global") return "global:public";
@@ -91,13 +134,6 @@ function LiveChat({ activeTab }: { activeTab?: string }) {
 
     s.emit("join", { roomId });
 
-    // Join institution room explicitly if we are in private mode? 
-    // Actually, to receive the invite, the student needs to be in the inst room. 
-    // If the student is currently in 'institution' scope, they are in the inst room. 
-    // If they are in 'global', they might MISS the invite. 
-    // Improvement: Always join 'inst:code' as a control channel?
-    // For now, assume they are in 'institution' (default).
-
     // Counselor: Emit invite if entering private mode
     if (scope === "private" && session.role === "counsellor" && targetStudentId) {
       s.emit("request_private_session", {
@@ -110,20 +146,7 @@ function LiveChat({ activeTab }: { activeTab?: string }) {
     s.on("message", (m) => setMessages((prev) => [...prev, m]));
     s.on("alert", (a) => setMessages((prev) => [...prev, { system: true, ...a }]));
 
-    // Student: Listen for invite
-    s.on("private_session_invite", (payload) => {
-      if (session.role === "student" && session.anonymousId === payload.targetStudentId) {
-        // Auto-accept and PERSIST to URL so refresh works
-        setSearchParams(params => {
-          params.set("tab", "private");
-          params.set("privateRoomId", payload.privateRoomId);
-          return params;
-        });
-        // State update will happen automatically via the URL read logic below or we set it here for speed
-        setPrivateRoomId(payload.privateRoomId);
-        setScope("private");
-      }
-    });
+
 
     return () => { s.disconnect(); };
   }, [roomId, scope]); // Re-run when scope changes to join new room
@@ -160,6 +183,7 @@ function LiveChat({ activeTab }: { activeTab?: string }) {
               nav("/moderation");
             } else {
               setScope("institution");
+              setSearchParams({ tab: "live" });
             }
           }} className="ml-auto text-xs underline">Exit</button>
         </div>
@@ -195,7 +219,9 @@ function LiveChat({ activeTab }: { activeTab?: string }) {
         {messages.map((m, i) => (
           <div key={i} className="text-sm py-1">
             {m.system ? (
-              <span className="text-amber-600">[ALERT] {m.severity}</span>
+              <span className={`font-bold ${m.severity === "severe" ? "text-destructive" : "text-amber-600"}`}>
+                [ALERT] {m.severity.toUpperCase()}
+              </span>
             ) : (
               <>
                 <span className="font-semibold mr-2">
